@@ -16,8 +16,17 @@ def main() -> None:
     elif cmd == "replication":
         from .replication import run
         sys.exit(run())
+    elif cmd == "forecasts":
+        from .models import run
+        run()
+    elif cmd == "evaluate":
+        from .evaluate import run
+        sys.exit(run())
+    elif cmd == "quickstats":
+        from .quickstats import run
+        sys.exit(run())
     else:
-        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication")
+        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|evaluate|quickstats")
 
 
 main()

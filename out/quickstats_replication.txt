@@ -1,0 +1,3 @@
+Quick Stats finals vs the August NASS production reliability (data-validation numbers, not PREREG scores)
+Aug 2015: RMSE 4.33 (printed 4.3); below/above 10/10 (printed 10/10); mean/min/max 345/16/940 Mbu
+Aug 2025: RMSE 3.77 (printed 3.8); below/above 7/13 (printed 7/13); mean/min/max 369/5/1192 Mbu
