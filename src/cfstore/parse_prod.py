@@ -53,12 +53,13 @@ def _groups(years: list[int]) -> list[int]:
     return sizes
 
 
-def parse_corn_table(text: str, title=TITLE) -> dict | None:
+def parse_corn_table(text: str, title=TITLE, columns: bool = False) -> dict | None:
     """{'area_harvested_kac', 'yield', 'production_kbu'} (the report's own, last column of each group; the Annual
     Summary table has no area) from the national row of the first matching corn-for-grain table, or None if the
     report has no such table. A table is recognised by its header: area harvested + yield + production (3 column
     groups) or yield + production (2 groups); a title whose header is something else (e.g. the area-only page of a
-    two-page table) is skipped."""
+    two-page table) is skipped. With columns=True (Annual Summary layout only) every column is returned instead:
+    {'yield': [(crop year, value), ...], 'production_kbu': [...]}, years from the table's own year header."""
     lines = text.replace("\x0c", "\n").splitlines()
     for i, ln in enumerate(lines):
         if not title.search(ln) or "silage" in ln.lower():
@@ -95,6 +96,16 @@ def parse_corn_table(text: str, title=TITLE) -> dict | None:
                 sizes = [2, 3, 2] if MONTH_COL.search(block) else [2, 2, 3]
             else:
                 raise ValueError(f"unexpected national row width {len(vals)}: {ln2!r}")
+            if columns:
+                if len(names) != 2:
+                    raise ValueError("columns=True is for the two-group Annual Summary layout")
+                k, res = 0, {}
+                for n, sz in zip(names, sizes):
+                    res[n] = list(zip(yrs[k:k + sz], vals[k:k + sz]))
+                    k += sz
+                if any(v is None for col in res.values() for _, v in col):
+                    raise ValueError(f"(NA) in the Annual Summary national row: {ln2!r}")
+                return res
             out, k = {}, 0
             for n, sz in zip(names, sizes):
                 k += sz
