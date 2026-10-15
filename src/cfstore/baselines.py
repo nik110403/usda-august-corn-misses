@@ -4,10 +4,11 @@ No score of any kind is computed here (PREREG: every scope cut happens before th
 Everything is exact rationals. Rows come only from `asof.build_features` (select + leakage assertion) or from
 `trend.trend_at` (finals strictly before the origin, asserted).
 
-PREREG 3 B1 is "scored at 90% against both truths". The band is a PRODUCTION band; the implied YIELD band divides it by
-USDA's harvested area at the origin. Both are returned as separate fields. Reading adopted here (a documentation choice,
-nothing is scored in F5): the production band is judged against production truth and the yield band against yield truth,
-each for the primary truth (January first-final) and the sensitivity truth (latest Quick Stats value, a pseudo-vintage).
+PREREG 3 B1 is "scored at 90% against both truths". Reading adopted (PREREG-AMENDMENTS.md, 2026-10-16): "both truths" are the
+primary truth (January first-final) and the sensitivity truth (latest Quick Stats value, a pseudo-vintage) of PREREG 1. The
+PRODUCTION band is the object PREREG 3 defines and is scored against production truth. The YIELD band (production band divided
+by USDA's harvested area at the origin) is a derived/added object NOT defined by PREREG 3; both are returned as separate fields
+and nothing is scored in F5. B1 is unavailable at the Oct 2008 origin (see b1_band).
 """
 import csv
 from dataclasses import dataclass

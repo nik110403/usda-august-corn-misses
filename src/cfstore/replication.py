@@ -1,6 +1,7 @@
 """NASS replication gate (STRATEGY 8, SPEC F5, checks/RESULTS item 3) and the Good-Irwin qualitative check.
 
-A data-validation gate, not a PREREG score: nothing here touches B0/B1/M1.
+A data-validation gate, not a PREREG score. The Good-Irwin table does touch the point used by B1 production, M1 and B2 yield
+(USDA's own Aug-Nov point) as RMSE against final; see PREREG-AMENDMENTS.md (2026-10-16) for that disclosure. B0 is not touched.
 
 NASS's own definition (CropProd-08-12-2015.txt lines 2647-2660, same text in 2025): the deviation between the August 1
 production forecast and the final estimate is expressed as a percentage of the final estimate; the root of the mean of the
@@ -25,10 +26,11 @@ from .parse_prod import SUMMARY_TITLE, parse_corn_table
 PRINTED = {2015: {"rmse": Fraction("4.3"), "below": 10, "above": 10, "mean_mbu": 344, "min_mbu": 16, "max_mbu": 940},
            2025: {"rmse": Fraction("3.8"), "below": 7, "above": 13}}  # RESULTS item 3; re-read from the store rows below
 WINDOW = 20
-MISS_CAUSE = ("Cause: NASS's printed 'final' is its latest revised estimate, including Census-benchmark revisions made years after "
-              "the January Annual Summary (an Annual Summary restates only the two previous crop years). The store holds no vintage "
-              "after (b), so the older years' finals differ; printed mean and largest differences (370 / 1,192 Mbu "
-              "in 2025, 361 / 1,167 here) are consistent with it. Not tuned further.")
+MISS_CAUSE = ("Likely cause (hypothesis, not verified): NASS's printed 'final' is its latest revised estimate, which probably includes "
+              "Census-benchmark revisions made years after the January Annual Summary (an Annual Summary restates only the two "
+              "previous crop years). The store holds no vintage after (b), so the older years' finals would differ. Directional "
+              "evidence: the store finals' mean and largest differences are below the printed ones in both years (370 / 1,192 Mbu "
+              "printed in 2025, 361 / 1,167 here). Checkable later against Quick Stats latest values. Not tuned further.")
 MONTHS = {8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov'}
 TOL_PP = Fraction(1, 10)
 
