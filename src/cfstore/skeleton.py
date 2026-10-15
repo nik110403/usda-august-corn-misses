@@ -24,13 +24,16 @@ def usda_yield(rows: list[dict], origin: dict, season: int) -> Fraction:
     return Fraction(c[0]["value"])
 
 
-def august_errors(store: list[dict], releases: list[dict], season_to: int) -> list[Fraction]:
+FIRST_SEASON = 2010  # the diagnostic stays 2010+ only now that the store reaches back to 1995 (F4b); no scoring
+
+
+def august_errors(store: list[dict], releases: list[dict], season_to: int, first_season: int = FIRST_SEASON) -> list[Fraction]:
     """Percent errors e = 100*(final - USDA_Aug)/USDA_Aug of 2010+ seasons whose first-final precedes the season_to August origin_ts."""
     aug = {int(o["release_date"][:4]): o for o in origins(releases) if o["release_date"][5:7] == "08"}
     o_now = aug[season_to]
     visible = info_set(store, o_now)
     errs = []
-    for s in sorted(aug):
+    for s in sorted(y for y in aug if y >= first_season):
         t = truth_rows(visible, s)
         if t is None:
             continue

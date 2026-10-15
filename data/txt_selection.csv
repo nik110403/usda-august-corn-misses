@@ -1,0 +1,209 @@
+listing_date,listing_id,fname,role,wasde_no,header_date,release_date,revision_flag,reason
+1995-01-12,95867,wasde-01-12-1995.txt,primary,298,1995-01-12,1995-01-12,v1,cover date == ESMIS date
+1995-01-31,95866,readme.txt,excluded,,,,,not a report file name (cotton/news/readme/announcement/special)
+1995-02-12,95865,wasde-02-12-1995.txt,primary,299,1995-02-10,1995-02-10,v1,"ESMIS date is a Sunday; cover says WASDE-299 - February 10, 1995"
+1995-03-10,95864,wasde-03-10-1995.txt,primary,300,1995-03-10,1995-03-10,v1,cover date == ESMIS date
+1995-03-12,95863,wasde-03-12-1995.txt,excluded,,,,,no US corn table (narrative/cotton extract or notice)
+1995-04-10,95862,wasde-04-10-1995.txt,excluded,,,,,no US corn table (narrative/cotton extract or notice)
+1995-04-11,95861,wasde-04-11-1995.txt,primary,301,1995-04-11,1995-04-11,v1,cover date == ESMIS date
+1995-05-10,95860,wasde-05-10-1995.txt,excluded,,,,,no US corn table (narrative/cotton extract or notice)
+1995-05-11,95859,wasde-05-11-1995.txt,primary,302,1995-05-11,1995-05-11,v1,cover date == ESMIS date
+1995-06-09,95858,wasde-06-09-1995.txt,excluded,,,,,no US corn table (narrative/cotton extract or notice)
+1995-06-12,95857,wasde-06-12-1995.txt,primary,303,1995-06-12,1995-06-12,v1,cover date == ESMIS date
+1995-07-11,95856,wasde-07-11-1995.txt,excluded,,,,,no US corn table (narrative/cotton extract or notice)
+1995-07-12,95855,wasde-07-12-1995.txt,primary,304,1995-07-12,1995-07-12,v1,cover date == ESMIS date
+1995-08-10,95854,wasde-08-10-1995.txt,excluded,,,,,no US corn table (narrative/cotton extract or notice)
+1995-08-14,95853,wasde-08-14-1995.txt,primary,305,1995-08-11,1995-08-11,v1,cover says Aug 11; WASDE-304 text announces 'the August 11 issue'
+1995-09-11,95852,wasde-09-11-1995.txt,excluded,,,,,no US corn table (narrative/cotton extract or notice)
+1995-09-12,95851,wasde-09-12-1995.txt,primary,306,1995-09-12,1995-09-12,v1_corrected_only,"cover date == ESMIS date; correction marker: ""have been corrected from today's original release"""
+1995-10-10,95850,wasde-10-10-1995.txt,excluded,,,,,no US corn table (narrative/cotton extract or notice)
+1995-10-11,95849,wasde-10-11-1995.txt,primary,307,1995-10-11,1995-10-11,v1,cover date == ESMIS date
+1995-11-08,95848,wasde-11-08-1995.txt,excluded,308,1995-11-08,,,no US corn table (narrative/cotton extract or notice)
+1995-11-09,95847,wasde-11-09-1995.txt,primary,308,1995-11-09,1995-11-09,v1,cover date == ESMIS date
+1995-12-11,95846,wasde-12-11-1995.txt,excluded,309,1995-12-11,,,no US corn table (narrative/cotton extract or notice)
+1995-12-12,95845,wasde-12-12-1995.txt,primary,309,1995-12-12,1995-12-12,v1,cover date == ESMIS date
+1996-01-16,95844,wasde-01-16-1996.txt,primary,310,1996-01-16,1996-01-16,v1,cover date == ESMIS date
+1996-01-16,95844,wasde-01-16-1996_cotton.txt,excluded,,,,,not a report file name (cotton/news/readme/announcement/special)
+1996-02-08,95843,wasde-02-08-1996_cotton.txt,excluded,,,,,not a report file name (cotton/news/readme/announcement/special)
+1996-02-09,95842,wasde-02-09-1996.txt,primary,311,1996-02-09,1996-02-09,v1,cover date == ESMIS date
+1996-03-11,95841,wasde-03-11-1996_cotton.txt,excluded,,,,,not a report file name (cotton/news/readme/announcement/special)
+1996-03-14,95840,wasde-03-14-1996.txt,primary,312,1996-03-12,1996-03-14,v1_corrected_only,file is a correction of WASDE-312 issued Mar 12 (original not in ESMIS); corrected_only; correction marker: 'THIS IS A CORRECTION OF WASDE-312'
+1996-04-10,95839,wasde-04-10-1996_cotton.txt,excluded,,,,,not a report file name (cotton/news/readme/announcement/special)
+1996-04-11,95838,wasde-04-11-1996.txt,primary,313,1996-04-11,1996-04-11,v1,cover date == ESMIS date
+1996-05-10,95837,wasde-05-10-1996.txt,primary,314,1996-05-10,1996-05-10,v1,cover date == ESMIS date
+1996-06-12,95836,wasde-06-12-1996.txt,primary,315,1996-06-12,1996-06-12,v1,cover date == ESMIS date
+1996-07-12,95835,wasde-07-12-1996.txt,primary,316,1996-07-12,1996-07-12,v1,cover date == ESMIS date
+1996-08-12,95834,wasde-08-12-1996.txt,primary,317,1996-08-12,1996-08-12,v1,cover date == ESMIS date
+1996-09-11,95833,wasde-09-11-1996.txt,primary,318,1996-09-11,1996-09-11,v1,cover date == ESMIS date
+1996-10-11,95832,wasde-10-11-1996.txt,primary,319,1996-10-11,1996-10-11,v1,cover date == ESMIS date
+1996-11-12,95831,wasde-11-12-1996.txt,primary,320,1996-11-12,1996-11-12,v1,cover date == ESMIS date
+1996-12-12,95830,wasde-12-12-1996.txt,primary,321,1996-12-12,1996-12-12,v1,cover date == ESMIS date
+1997-01-10,95829,wasde-01-10-1997.txt,primary,322,1997-01-10,1997-01-10,v1,cover date == ESMIS date
+1997-02-12,95828,wasde-02-12-1997.txt,primary,323,1997-02-12,1997-02-12,v1,cover date == ESMIS date
+1997-03-11,95827,wasde-03-11-1997.txt,primary,324,1997-03-11,1997-03-11,v1,cover date == ESMIS date
+1997-04-11,95826,wasde-04-11-1997.txt,primary,325,1997-04-11,1997-04-11,v1,cover date == ESMIS date
+1997-05-12,95825,wasde-05-12-1997.txt,primary,326,1997-05-12,1997-05-12,v1,cover date == ESMIS date
+1997-06-12,95824,wasde-06-12-1997.txt,primary,327,1997-06-12,1997-06-12,v1,cover date == ESMIS date
+1997-07-11,95823,wasde-07-11-1997.txt,primary,328,1997-07-11,1997-07-11,v1,cover date == ESMIS date
+1997-08-12,95822,wasde-08-12-1997.txt,primary,329,1997-08-12,1997-08-12,v1,cover date == ESMIS date
+1997-09-12,95821,wasde-09-12-1997.txt,primary,330,1997-09-12,1997-09-12,v1,cover date == ESMIS date
+1997-10-10,95820,wasde-10-10-1997.txt,primary,331,1997-10-10,1997-10-10,v1,cover date == ESMIS date
+1997-11-10,95819,wasde-11-10-1997.txt,primary,332,1997-11-10,1997-11-10,v1,cover date == ESMIS date
+1997-12-11,95818,wasde-12-11-1997.txt,primary,333,1997-12-11,1997-12-11,v1,cover date == ESMIS date
+1998-01-13,95817,wasde-01-13-1998.txt,primary,334,1998-01-13,1998-01-13,v1,cover date == ESMIS date
+1998-02-11,95816,wasde-02-11-1998.txt,primary,335,1998-02-11,1998-02-11,v1,cover date == ESMIS date
+1998-03-12,95815,wasde-03-12-1998.txt,primary,336,1998-03-12,1998-03-12,v1,cover date == ESMIS date
+1998-04-09,95814,wasde-04-09-1998.txt,primary,337,1998-04-09,1998-04-09,v1,cover date == ESMIS date
+1998-05-12,95813,wasde-05-12-1998.txt,primary,338,1998-05-12,1998-05-12,v1_corrected_only,cover date == ESMIS date; correction marker: 'CORRECTION:'
+1998-06-12,95812,wasde-06-12-1998.txt,primary,339,1998-06-12,1998-06-12,v1,cover date == ESMIS date
+1998-07-10,95811,wasde-07-10-1998.txt,primary,340,1998-07-10,1998-07-10,v1,cover date == ESMIS date
+1998-08-12,95810,wasde-08-12-1998.txt,primary,341,1998-08-12,1998-08-12,v1,cover date == ESMIS date
+1998-09-11,95809,wasde-09-11-1998.txt,primary,342,1998-09-11,1998-09-11,v1,cover date == ESMIS date
+1998-10-09,95808,wasde-10-09-1998.txt,primary,343,1998-10-09,1998-10-09,v1,cover date == ESMIS date
+1998-11-10,95807,wasde-11-10-1998.txt,primary,344,1998-11-10,1998-11-10,v1_corrected_only,cover date == ESMIS date; correction marker: 'CORRECTED'
+1998-12-11,95806,wasde-12-11-1998.txt,primary,345,1998-12-11,1998-12-11,v1,cover date == ESMIS date
+1999-01-12,95805,wasde-01-12-1999.txt,primary,346,1999-01-12,1999-01-12,v1,cover date == ESMIS date
+1999-02-10,95804,wasde-02-10-1999.txt,primary,347,1999-02-10,1999-02-10,v1,cover date == ESMIS date
+1999-03-11,95803,wasde-03-11-1999.txt,primary,348,1999-03-11,1999-03-11,v1,cover date == ESMIS date
+1999-04-09,95802,wasde-04-09-1999.txt,primary,349,1999-04-09,1999-04-09,v1,cover date == ESMIS date
+1999-05-12,95801,wasde-05-12-1999.txt,primary,350,1999-05-12,1999-05-12,v1,cover date == ESMIS date
+1999-06-11,95800,wasde-06-11-1999.txt,primary,351,1999-06-11,1999-06-11,v1,cover date == ESMIS date
+1999-07-12,95799,wasde-07-12-1999.txt,primary,352,1999-07-12,1999-07-12,v1,cover date == ESMIS date
+1999-08-12,95798,wasde-08-12-1999.txt,primary,353,1999-08-12,1999-08-12,v1,cover date == ESMIS date
+1999-09-10,95797,wasde-09-10-1999.txt,primary,354,1999-09-10,1999-09-10,v1,cover date == ESMIS date
+1999-10-08,95796,wasde-10-08-1999.txt,primary,355,1999-10-08,1999-10-08,v1,cover date == ESMIS date
+1999-11-10,95795,wasde-11-10-1999.txt,primary,356,1999-11-10,1999-11-10,v1,cover date == ESMIS date
+1999-12-10,95794,wasde-12-10-1999.txt,primary,357,1999-12-10,1999-12-10,v1,cover date == ESMIS date
+2000-01-12,95793,wasde-01-12-2000.txt,primary,358,2000-01-12,2000-01-12,v1,cover date == ESMIS date
+2000-02-11,95792,wasde-02-11-2000.txt,primary,359,2000-02-11,2000-02-11,v1,cover date == ESMIS date
+2000-03-10,95791,wasde-03-10-2000.txt,primary,360,2000-03-10,2000-03-10,v1,cover date == ESMIS date
+2000-04-01,95790,wasde-04-01-2000.txt,primary,361,2000-04-11,2000-04-11,v1,"ESMIS date typo; cover says WASDE-361 April 11, 2000"
+2000-05-12,95789,wasde-05-12-2000.txt,primary,362,2000-05-12,2000-05-12,v1,cover date == ESMIS date
+2000-06-09,95788,wasde-06-09-2000.txt,primary,363,2000-06-09,2000-06-09,v1,cover date == ESMIS date
+2000-07-12,95787,wasde-07-12-2000.txt,primary,364,2000-07-12,2000-07-12,v1,cover date == ESMIS date
+2000-08-11,95786,wasde-08-11-2000.txt,primary,365,2000-08-11,2000-08-11,v1,cover date == ESMIS date
+2000-09-12,95785,wasde-09-12-2000.txt,primary,366,2000-09-12,2000-09-12,v1,cover date == ESMIS date
+2000-10-12,95784,wasde-10-12-2000.txt,primary,367,2000-10-12,2000-10-12,v1,cover date == ESMIS date
+2000-11-09,95783,wasde-11-09-2000.txt,primary,368,2000-11-09,2000-11-09,v1,cover date == ESMIS date
+2000-12-12,95782,wasde-12-12-2000.txt,primary,369,2000-12-12,2000-12-12,v1,cover date == ESMIS date
+2001-01-11,95781,wasde-01-11-2001.txt,primary,370,2001-01-11,2001-01-11,v1,cover date == ESMIS date
+2001-02-08,95780,wasde-02-08-2001.txt,primary,371,2001-02-08,2001-02-08,v1,cover date == ESMIS date
+2001-03-08,95779,wasde-03-08-2001.txt,primary,372,2001-03-08,2001-03-08,v1,cover date == ESMIS date
+2001-04-10,95778,wasde-04-10-2001.txt,primary,373,2001-04-10,2001-04-10,v1,cover date == ESMIS date
+2001-05-10,95776,wasde-05-10-2001.txt,primary,374,2001-05-10,2001-05-10,v1,cover date == ESMIS date
+2001-06-12,95775,wasde-06-12-2001.txt,primary,375,2001-06-12,2001-06-12,v1,cover date == ESMIS date
+2001-07-11,95774,wasde-07-11-2001.txt,primary,376,2001-07-11,2001-07-11,v1,cover date == ESMIS date
+2001-08-10,95773,wasde-08-10-2001.txt,primary,377,2001-08-10,2001-08-10,v1,cover date == ESMIS date
+2001-09-11,95772,wasde-09-11-2001_news.txt,excluded,,,,,not a report file name (cotton/news/readme/announcement/special)
+2001-09-14,95771,wasde-09-14-2001.txt,primary,378,2001-09-14,2001-09-14,v1,cover date == ESMIS date
+2001-10-12,95770,wasde-10-12-2001.txt,primary,379,2001-10-12,2001-10-12,v1,cover date == ESMIS date
+2001-11-09,95769,wasde-11-09-2001.txt,primary,380,2001-11-09,2001-11-09,v1,cover date == ESMIS date
+2001-12-11,95768,wasde-12-11-2001.txt,primary,381,2001-12-11,2001-12-11,v1,cover date == ESMIS date
+2002-01-11,95767,wasde-01-11-2002.txt,primary,382,2002-01-11,2002-01-11,v1,cover date == ESMIS date
+2002-02-08,95766,wasde-02-08-2002.txt,primary,383,2002-02-08,2002-02-08,v1,cover date == ESMIS date
+2002-03-08,95765,wasde-03-08-2002.txt,primary,384,2002-03-08,2002-03-08,v1,cover date == ESMIS date
+2002-04-10,95764,wasde-04-10-2002.txt,primary,385,2002-04-10,2002-04-10,v1,cover date == ESMIS date
+2002-05-10,95763,wasde-05-10-2002.txt,primary,386,2002-05-10,2002-05-10,v1,cover date == ESMIS date
+2002-06-12,95762,wasde-06-12-2002.txt,primary,387,2002-06-12,2002-06-12,v1,cover date == ESMIS date
+2002-07-11,95761,wasde-07-11-2002.txt,primary,388,2002-07-11,2002-07-11,v1,cover date == ESMIS date
+2002-08-12,95760,wasde-08-12-2002.txt,primary,389,2002-08-12,2002-08-12,v1,cover date == ESMIS date
+2002-09-12,95759,wasde-09-12-2002.txt,primary,390,2002-09-12,2002-09-12,v1,cover date == ESMIS date
+2002-10-11,95758,wasde-10-11-2002.txt,primary,391,2002-10-11,2002-10-11,v1,cover date == ESMIS date
+2002-11-12,95757,wasde-11-12-2002.txt,primary,392,2002-11-12,2002-11-12,v1,cover date == ESMIS date
+2002-12-10,95756,wasde-12-10-2002.txt,primary,393,2002-12-10,2002-12-10,v1,cover date == ESMIS date
+2003-01-10,95755,wasde-01-10-2003.txt,primary,394,2003-01-10,2003-01-10,v1,cover date == ESMIS date
+2003-02-11,95754,wasde-02-11-2003.txt,primary,395,2003-02-11,2003-02-11,v1,cover date == ESMIS date
+2003-03-11,95753,wasde-03-11-2003.txt,primary,396,2003-03-11,2003-03-11,v1,cover date == ESMIS date
+2003-04-10,95752,wasde-04-10-2003.txt,primary,397,2003-04-10,2003-04-10,v1,cover date == ESMIS date
+2003-05-12,95751,wasde-05-12-2003.txt,primary,398,2003-05-12,2003-05-12,v1,cover date == ESMIS date
+2003-06-11,95750,wasde-06-11-2003.txt,primary,399,2003-06-11,2003-06-11,v1,cover date == ESMIS date
+2003-07-11,95749,wasde-07-11-2003.txt,primary,400,2003-07-11,2003-07-11,v1,cover date == ESMIS date
+2003-08-12,95748,wasde-08-12-2003.txt,primary,401,2003-08-12,2003-08-12,v1,cover date == ESMIS date
+2003-09-11,95747,wasde-09-11-2003.txt,primary,402,2003-09-11,2003-09-11,v1,cover date == ESMIS date
+2003-10-10,95746,wasde-10-10-2003.txt,primary,403,2003-10-10,2003-10-10,v1,cover date == ESMIS date
+2003-11-12,95745,wasde-11-12-2003.txt,primary,404,2003-11-12,2003-11-12,v1,cover date == ESMIS date
+2003-12-11,95744,wasde-12-11-2003.txt,primary,405,2003-12-11,2003-12-11,v1,cover date == ESMIS date
+2004-01-12,95743,wasde-01-12-2004.txt,primary,406,2004-01-12,2004-01-12,v1,cover date == ESMIS date
+2004-02-10,95742,wasde-02-10-2004.txt,primary,407,2004-02-10,2004-02-10,v1,cover date == ESMIS date
+2004-03-10,95741,wasde-03-10-2004.txt,primary,408,2004-03-10,2004-03-10,v1,cover date == ESMIS date
+2004-04-08,95740,wasde-04-08-2004.txt,primary,409,2004-04-08,2004-04-08,v1,cover date == ESMIS date
+2004-05-12,95739,wasde-05-12-2004.txt,primary,410,2004-05-12,2004-05-12,v1,cover date == ESMIS date
+2004-06-10,95738,wasde-06-10-2004.txt,primary,411,2004-06-10,2004-06-10,v1,cover date == ESMIS date
+2004-07-12,95737,wasde-07-12-2004.txt,primary,412,2004-07-12,2004-07-12,v1,cover date == ESMIS date
+2004-08-12,95736,wasde-08-12-2004.txt,primary,413,2004-08-12,2004-08-12,v1,cover date == ESMIS date
+2004-09-10,95735,wasde-09-10-2004.txt,primary,414,2004-09-10,2004-09-10,v1,cover date == ESMIS date
+2004-10-12,95734,wasde-10-12-2004.txt,primary,415,2004-10-12,2004-10-12,v1,cover date == ESMIS date
+2004-11-12,95733,wasde-11-12-2004.txt,primary,416,2004-11-12,2004-11-12,v1,cover date == ESMIS date
+2004-12-10,95732,wasde-12-10-2004.txt,primary,417,2004-12-10,2004-12-10,v1,cover date == ESMIS date
+2005-01-12,95731,wasde-01-12-2005.txt,primary,418,2005-01-12,2005-01-12,v1,cover date == ESMIS date
+2005-02-09,95730,wasde-02-09-2005.txt,primary,419,2005-02-09,2005-02-09,v1,cover date == ESMIS date
+2005-03-10,95729,wasde-03-10-2005.txt,primary,420,2005-03-10,2005-03-10,v1,cover date == ESMIS date
+2005-04-08,95728,wasde-04-08-2005.txt,primary,421,2005-04-08,2005-04-08,v1,cover date == ESMIS date
+2005-05-12,95727,wasde-05-12-2005.txt,primary,422,2005-05-12,2005-05-12,v1,cover date == ESMIS date
+2005-06-10,95726,wasde-06-10-2005.txt,primary,423,2005-06-10,2005-06-10,v1,cover date == ESMIS date
+2005-07-12,95725,wasde-07-12-2005.txt,primary,424,2005-07-12,2005-07-12,v1,cover date == ESMIS date
+2005-08-12,95724,wasde-08-12-2005.txt,primary,425,2005-08-12,2005-08-12,v1,cover date == ESMIS date
+2005-09-12,95723,wasde-09-12-2005.txt,primary,426,2005-09-12,2005-09-12,v1,cover date == ESMIS date
+2005-10-12,95722,wasde-10-12-2005.txt,primary,427,2005-10-12,2005-10-12,v1,cover date == ESMIS date
+2005-11-10,95721,wasde-11-10-2005.txt,primary,428,2005-11-10,2005-11-10,v1,cover date == ESMIS date
+2005-12-09,95720,wasde-12-09-2005.txt,primary,429,2005-12-09,2005-12-09,v1,cover date == ESMIS date
+2006-01-12,95719,wasde-01-12-2006.txt,primary,430,2006-01-12,2006-01-12,v1,cover date == ESMIS date
+2006-02-09,95718,wasde-02-09-2006.txt,primary,431,2006-02-09,2006-02-09,v1,cover date == ESMIS date
+2006-03-13,95717,wasde-03-13-2006_revision.txt,primary,432,2006-03-10,2006-03-13,v1_corrected_only,"file name _revision, cover WASDE-432 March 10, 2006 (original not in ESMIS); corrected_only; correction marker: 'file name _revision'"
+2006-04-10,95716,wasde-04-10-2006.txt,primary,433,2006-04-10,2006-04-10,v1,cover date == ESMIS date
+2006-05-12,95715,wasde-05-12-2006.txt,primary,434,2006-05-12,2006-05-12,v1,cover date == ESMIS date
+2006-06-09,95714,wasde-06-09-2006.txt,primary,435,2006-06-09,2006-06-09,v1_corrected_only,cover date == ESMIS date; correction marker: '(Corrected copy)'
+2006-06-09,95714,wasde-06-09-2006_revision.txt,excluded,435,2006-06-09,,,"byte-identical to primary wasde-06-09-2006.txt (first, non-correction wins)"
+2006-07-12,95713,wasde-07-12-2006.txt,primary,436,2006-07-12,2006-07-12,v1,cover date == ESMIS date
+2006-08-11,95712,wasde-08-11-2006.txt,primary,437,2006-08-11,2006-08-11,v1,cover date == ESMIS date
+2006-09-12,95711,wasde-09-12-2006.txt,primary,438,2006-09-12,2006-09-12,v1,cover date == ESMIS date
+2006-10-12,95710,wasde-10-12-2006.txt,primary,439,2006-10-12,2006-10-12,v1,cover date == ESMIS date
+2006-11-09,95709,wasde-11-09-2006.txt,primary,440,2006-11-09,2006-11-09,v1,cover date == ESMIS date
+2006-12-11,95708,wasde-12-11-2006.txt,primary,441,2006-12-11,2006-12-11,v1,cover date == ESMIS date
+2007-01-12,95707,wasde-01-12-2007.txt,primary,442,2007-01-12,2007-01-12,v1,cover date == ESMIS date
+2007-02-09,95706,wasde-02-09-2007.txt,primary,443,2007-02-09,2007-02-09,v1,cover date == ESMIS date
+2007-03-09,95705,wasde-03-09-2007.txt,primary,444,2007-03-09,2007-03-09,v1,cover date == ESMIS date
+2007-04-10,95704,wasde-04-10-2007.txt,primary,445,2007-04-10,2007-04-10,v1,cover date == ESMIS date
+2007-05-11,95703,wasde-05-11-2007.txt,primary,446,2007-05-11,2007-05-11,v1,cover date == ESMIS date
+2007-06-11,95702,wasde-06-11-2007.txt,primary,447,2007-06-11,2007-06-11,v1,cover date == ESMIS date
+2007-07-12,95701,wasde-07-12-2007.txt,primary,448,2007-07-12,2007-07-12,v1,cover date == ESMIS date
+2007-08-10,95700,wasde-08-10-2007.txt,primary,449,2007-08-10,2007-08-10,v1,cover date == ESMIS date
+2007-09-12,95699,wasde-09-12-2007.txt,primary,450,2007-09-12,2007-09-12,v1,cover date == ESMIS date
+2007-10-12,95698,wasde-10-12-2007.txt,primary,451,2007-10-12,2007-10-12,v1,cover date == ESMIS date
+2007-11-09,95697,wasde-11-09-2007.txt,primary,452,2007-11-09,2007-11-09,v1,cover date == ESMIS date
+2007-12-11,95696,wasde-12-11-2007.txt,primary,453,2007-12-11,2007-12-11,v1,cover date == ESMIS date
+2008-01-11,95695,wasde-01-11-2008.txt,primary,454,2008-01-11,2008-01-11,v1,cover date == ESMIS date
+2008-02-08,95694,wasde-02-08-2008.txt,primary,455,2008-02-08,2008-02-08,v1,cover date == ESMIS date
+2008-03-11,95693,wasde-03-11-2008.txt,primary,456,2008-03-11,2008-03-11,v1,cover date == ESMIS date
+2008-04-09,95692,wasde-04-09-2008.txt,primary,457,2008-04-09,2008-04-09,v1,cover date == ESMIS date
+2008-05-07,95690,wasde-05-07-2008_Announcement.txt.txt,excluded,,,,,not a report file name (cotton/news/readme/announcement/special)
+2008-05-09,95689,wasde-05-09-2008.txt,primary,458,2008-05-09,2008-05-09,v1,cover date == ESMIS date
+2008-06-10,95688,wasde-06-10-2008.txt,primary,459,2008-06-10,2008-06-10,v1,cover date == ESMIS date
+2008-07-11,95686,wasde-07-11-2008.txt,primary,460,2008-07-11,2008-07-11,v1,cover date == ESMIS date
+2008-08-12,95685,wasde-08-12-2008.txt,primary,461,2008-08-12,2008-08-12,v1,cover date == ESMIS date
+2008-09-12,95684,wasde-09-12-2008.txt,primary,462,2008-09-12,2008-09-12,v1,cover date == ESMIS date
+2008-10-10,95683,wasde-10-10-2008.txt,primary,463,2008-10-10,2008-10-10,v1,cover date == ESMIS date
+2008-10-10,95683,wasde-10-10-2008_SpecialReport.txt,excluded,,,,,not a report file name (cotton/news/readme/announcement/special)
+2008-10-28,95682,wasde-10-28-2008.txt,reissue,463,2008-10-28,2008-10-28,v1_reissue,"later file of WASDE-463 (primary wasde-10-10-2008.txt); corn values differ: a reissue, its own store release, never an origin"
+2008-11-10,95681,wasde-11-10-2008.txt,primary,464,2008-11-10,2008-11-10,v1,cover date == ESMIS date
+2008-12-11,95680,wasde-12-11-2008.txt,primary,465,2008-12-11,2008-12-11,v1,cover date == ESMIS date
+2008-12-12,95679,wasde-12-12-2008.txt,repost,465,2008-12-11,2008-12-12,v2_repost,later file of WASDE-465 (primary wasde-12-11-2008.txt); identical corn values: sensitivity-only repost
+2009-01-12,95678,wasde-01-12-2009.txt,primary,466,2009-01-12,2009-01-12,v1,cover date == ESMIS date
+2009-02-10,95677,wasde-02-10-2009.txt,primary,467,2009-02-10,2009-02-10,v1,cover date == ESMIS date
+2009-03-11,95676,wasde-03-11-2009.txt,primary,468,2009-03-11,2009-03-11,v1,cover date == ESMIS date
+2009-04-09,95675,wasde-04-09-2009.txt,primary,469,2009-04-09,2009-04-09,v1,cover date == ESMIS date
+2009-05-12,95674,wasde-05-12-2009.txt,primary,470,2009-05-12,2009-05-12,v1,cover date == ESMIS date
+2009-06-10,95673,wasde-06-10-2009.txt,primary,471,2009-06-10,2009-06-10,v1,cover date == ESMIS date
+2009-07-10,95672,wasde-07-10-2009.txt,primary,472,2009-07-10,2009-07-10,v1,cover date == ESMIS date
+2009-08-12,95671,wasde-08-12-2009.txt,primary,473,2009-08-12,2009-08-12,v1,cover date == ESMIS date
+2009-09-11,95670,wasde-09-11-2009.txt,primary,474,2009-09-11,2009-09-11,v1,cover date == ESMIS date
+2009-09-14,95669,wasde-09-14-2009.txt,excluded,,,,,no US corn table (narrative/cotton extract or notice)
+2009-10-09,95668,wasde-10-09-2009.txt,primary,475,2009-10-09,2009-10-09,v1,cover date == ESMIS date
+2009-11-10,95667,wasde-11-10-2009.txt,primary,476,2009-11-10,2009-11-10,v1,cover date == ESMIS date
+2009-12-10,95666,wasde-12-10-2009.txt,primary,477,2009-12-10,2009-12-10,v1,cover date == ESMIS date
+2010-01-12,95665,wasde-01-12-2010.txt,primary,478,2010-01-12,2010-01-12,v1,cover date == ESMIS date
+2010-02-09,95664,wasde-02-09-2010.txt,primary,479,2010-02-09,2010-02-09,v1,cover date == ESMIS date
+2010-03-10,95663,wasde-03-10-2010.txt,primary,480,2010-03-10,2010-03-10,v1,cover date == ESMIS date
+2010-04-09,95662,wasde-04-09-2010.txt,primary,481,2010-04-09,2010-04-09,v1,cover date == ESMIS date
+2010-05-11,95661,wasde-05-11-2010.txt,primary,482,2010-05-11,2010-05-11,v1,cover date == ESMIS date
+2010-06-10,95660,wasde-06-10-2010.txt,primary,483,2010-06-10,2010-06-10,v1,cover date == ESMIS date

@@ -1,6 +1,8 @@
 """Release-time table (data/release_times.csv) -> timezone-aware release_ts.
 
-The ESMIS 12:00 listing time is a placeholder and is never used.
+The ESMIS 12:00 listing time is a placeholder and is never used. For WASDE the date is the report's cover
+date (day_rule `cover_date`): it equals the ESMIS date except for the exceptions logged in data/txt_selection.csv
+(1995-02-10, 1995-08-11, 2000-04-11 take the cover date; corrected-only files keep the ESMIS date).
 """
 import csv
 from datetime import date, datetime, time
