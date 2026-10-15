@@ -269,3 +269,32 @@ def test_v2_variant_swaps_only_logged_reposts(run):
     assert changed <= {"2008-12-12", "2013-07-11", "2018-12-14"}
     assert "2013-07-11" in changed
     assert Run(st2, rel2).m1(_o(Run(st2, rel2), "2013-07-11"))  # still builds through the guard
+
+
+def test_b0_real_origins_scored_only_from_nine_errors_at_every_level(run):
+    """Structure only (scored flags), no score: B0 rows are scored from the first season with >= 9 own OOS errors (2009)."""
+    for ymd, want in (("2008-08-12", "0"), ("2009-08-12", "1")):
+        rows = run.b0(_o(run, ymd))
+        assert {r["scored"] for r in rows if r["kind"] == "level" and r["level"] in ("1/2", "4/5")} == {want}, ymd  # 90% needs n >= 19
+        assert {r["scored"] for r in rows if r["kind"] == "tau" and Fraction(r["tau"]) in models.TAUS5} == {want}, ymd
+    assert {r["n"] for r in run.b0(_o(run, "2009-08-12"))} == {"9"}
+
+
+def test_build_identity_is_stamped_and_stable():
+    from cfstore.fetch import ROOT
+    a, b = models.build_identity(ROOT), models.build_identity(ROOT)
+    assert a == b and len(a["store_sha256"]) == 64 and set(a) == set(models.META_COLS)
+
+
+def test_quickstats_duplicate_row_raises(tmp_path, monkeypatch):
+    import gzip
+    from cfstore import quickstats
+    hdr = ["SOURCE_DESC", "AGG_LEVEL_DESC", "FREQ_DESC", "REFERENCE_PERIOD_DESC", "DOMAIN_DESC", "SHORT_DESC", "YEAR", "VALUE", "LOAD_TIME"]
+    base = ["SURVEY", "NATIONAL", "ANNUAL", "YEAR", "TOTAL", quickstats.YIELD_DESC, "2000", "100", "t"]
+    p = tmp_path / "qs.txt.gz"
+    with gzip.open(p, "wt") as f:
+        f.write("\t".join(hdr) + "\n" + "\t".join(base) + "\n" + "\t".join(base[:7] + ["101", "t"]) + "\n")
+    monkeypatch.setattr(quickstats, "RAW", p)
+    monkeypatch.setattr(quickstats, "TRUTH", tmp_path / "truth.csv")
+    with pytest.raises(ValueError, match="duplicate"):
+        quickstats.write_truth()

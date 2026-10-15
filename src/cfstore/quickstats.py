@@ -54,6 +54,9 @@ def write_truth() -> dict:
     rows = extract()
     by = {}
     for r in rows:
+        if r["stat"] in by.get(r["year"], {}):
+            raise ValueError(f"Quick Stats: duplicate national annual {r['stat']} row for {r['year']} "
+                             f"(values {by[r['year']][r['stat']]['value']} and {r['value']}); refusing to overwrite")
         by.setdefault(r["year"], {})[r["stat"]] = r
     assert sorted(by) == list(range(1995, 2026)) and all(len(v) == 2 for v in by.values()), sorted(by)
     mani = read_manifest()[URL]

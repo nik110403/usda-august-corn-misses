@@ -26,6 +26,6 @@ forecasts:
 # Sensitivity truth: NASS Quick Stats latest national corn yield/production (bulk file, manifest-backed) + F5 replication check
 quickstats:
 	$(PY) quickstats
-# PREREG 4/5/10 in ONE run. DO NOT RUN before checkpoint 2 (scope cuts are logged first; fill scope_cuts.csv); refuses if PREREG.sha256 fails.
-evaluate:
+# PREREG 4/5/10 in ONE run. DO NOT RUN before checkpoint 2 (scope cuts are logged first; fill scope_cuts.csv); refuses if PREREG.sha256 fails, a leakage test fails, forecasts are stale, or a PREREG count fails.
+evaluate: forecasts
 	$(PY) evaluate

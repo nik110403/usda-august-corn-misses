@@ -40,6 +40,7 @@ TAUS7 = (Fraction(1, 20),) + TAUS5 + (Fraction(19, 20),)
 LEVELS = (Fraction(1, 2), Fraction(4, 5), Fraction(9, 10))
 MONTHS = {5: "May", 6: "Jun", 7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov"}
 SEASONS = range(2004, 2026)
+B0_MIN_N = 9  # PREREG 3: B0's band is scored once it has >= 9 own out-of-sample errors (seasons 2009-2025), at every level
 M3_MIN_TRAIN = 3  # M3 needs at least this many training seasons with a condition line; below it M3 = M1 (flagged)
 
 COLUMNS = ["model", "horizon", "season", "origin_date", "origin_ts", "kind", "tau", "level", "unit", "point", "n",
@@ -158,16 +159,18 @@ def base_row(model: str, o: dict, **kw) -> dict:
 
 
 def conformal_rows(model: str, o: dict, point: Fraction, unit: str, resid: list[Fraction], shift: Fraction = Fraction(0),
-                   in_tests: int = 1, note: str = "", **diag) -> list[dict]:
-    """PREREG 2 quantile/band rows around `point`: quantile = shift + order statistic of `resid` (percent space)."""
+                   in_tests: int = 1, note: str = "", min_n: int = 0, **diag) -> list[dict]:
+    """PREREG 2 quantile/band rows around `point`: quantile = shift + order statistic of `resid` (percent space).
+    `min_n`: a row is scored (scored = 1) only when it has an order statistic AND len(resid) >= min_n (B0: 9, PREREG 3)."""
     n, srt, out = len(resid), sorted(resid), []
+    enough = n >= min_n
     common = dict(unit=unit, point=point, n=n, in_tests=in_tests, note=note, **diag)
     for tau in TAUS7:
         k = tau_rank(n, tau)
         ok = 1 <= k <= n
         q = shift + srt[k - 1] if ok else None
         out.append(base_row(model, o, kind="tau", tau=tau, k=k, q=q, val=None if q is None else point * (1 + q / 100),
-                            scored=int(ok), **common))
+                            scored=int(ok and enough), **common))
     for lev in LEVELS:
         k_lo, k_hi = band_ranks(n, lev)
         ok = 1 <= k_lo and k_hi <= n
@@ -175,7 +178,7 @@ def conformal_rows(model: str, o: dict, point: Fraction, unit: str, resid: list[
         out.append(base_row(model, o, kind="level", level=lev, k_lo=k_lo, k_hi=k_hi, q_lo=lo, q_hi=hi,
                             val_lo=None if ok is False else point * (1 + lo / 100),
                             val_hi=None if ok is False else point * (1 + hi / 100),
-                            exp_cov=Fraction(k_hi - k_lo, n + 1), scored=int(ok), **common))
+                            exp_cov=Fraction(k_hi - k_lo, n + 1), scored=int(ok and enough), **common))
     return out
 
 
@@ -365,7 +368,8 @@ class Run:
     def b0(self, o: dict) -> list[dict]:
         pt = b0_point(self.b0_store, o)
         errs = b0_errors(self.b0_store, self.releases, o)
-        return conformal_rows("B0", o, pt, "bu/ac", errs)
+        return conformal_rows("B0", o, pt, "bu/ac", errs, min_n=B0_MIN_N,
+                              note="" if len(errs) >= B0_MIN_N else f"B0 own OOS errors n < {B0_MIN_N}: not scored (PREREG 3)")
 
     def b1(self, o: dict) -> list[dict]:
         if month_of(o) < 8:
@@ -383,7 +387,7 @@ class Run:
         lo, hi = p / (1 + r / 100), p / (1 - r / 100)
         out = []
         for m, u, pt, scale in (("B1", "Mbu", p, p), ("B1y", "bu/ac", y, y)):
-            f_lo, f_hi = lo / p, hi / p  # derived yield band = same ratios on USDA's yield (production band / implied area)
+            f_lo, f_hi = lo / p, hi / p  # derived yield band = same ratios on USDA's yield = production band / implied area (PREREG-AMENDMENTS 2026-10-16 F6a fix 1)
             out.append(base_row(m, o, kind="level", level=Fraction(9, 10), unit=u, point=pt, q_lo=100 * (f_lo - 1),
                                 q_hi=100 * (f_hi - 1), val_lo=pt * f_lo, val_hi=pt * f_hi, scored=1, in_tests=0,
                                 note="USDA band, descriptive; B1y is the derived yield band" if m == "B1y" else "USDA band, descriptive",
@@ -441,6 +445,26 @@ def v2_variant(store: list[dict], releases: list[dict]) -> tuple[list[dict], lis
     return st, rel
 
 
+META_COLS = ["build_commit", "code_tree", "store_sha256"]
+
+
+def build_identity(root) -> dict:
+    """Provenance stamped on every out/forecasts.csv row and re-derived by `evaluate` (staleness gate). `code_tree` is the git
+    tree hash of src/ (+ '+dirty' if src/ differs from HEAD): it identifies the code that built the file without changing when
+    the outputs themselves are committed; `build_commit` is HEAD at build time (informational). `store_sha256` hashes the
+    store and release tables the forecasts were built from."""
+    import hashlib
+    import subprocess
+    git = lambda *a: subprocess.run(["git", *a], cwd=root, capture_output=True, text=True, check=True).stdout.strip()
+    tree = git("rev-parse", "HEAD:src")
+    if git("status", "--porcelain", "--", "src", "pyproject.toml"):
+        tree += "+dirty"
+    h = hashlib.sha256()
+    for name in ("store.csv", "wasde_releases.csv"):
+        h.update((root / "data" / name).read_bytes())
+    return {"build_commit": git("rev-parse", "HEAD"), "code_tree": tree, "store_sha256": h.hexdigest()}
+
+
 def write_csv(path, rows: list[dict], cols: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="") as f:
@@ -456,12 +480,13 @@ def run() -> None:
     store, releases = load()
     out = ROOT / "out"
     rows, stu = Run(store, releases).all_rows()
-    write_csv(out / "forecasts.csv", rows, COLUMNS)
+    ident = build_identity(ROOT)
+    write_csv(out / "forecasts.csv", [dict(r, **ident) for r in rows], COLUMNS + META_COLS)
     dec = lambda v: f"{float(v):.4f}" if isinstance(v, Fraction) and v.denominator != 1 else v  # display-only file
     write_csv(out / "stocks_to_use.csv", [{k: dec(v) for k, v in r.items()} for r in stu], STU_COLUMNS)
     print(f"out/forecasts.csv: {len(rows)} rows; out/stocks_to_use.csv: {len(stu)} rows")
     st2, rel2 = v2_variant(store, releases)
     if any(r["revision_flag"] == "v2_repost" for r in store):
         rows2, _ = Run(st2, rel2).all_rows()
-        write_csv(out / "forecasts_v2.csv", rows2, COLUMNS)
+        write_csv(out / "forecasts_v2.csv", [dict(r, **ident) for r in rows2], COLUMNS + META_COLS)
         print(f"out/forecasts_v2.csv (v2 re-post sensitivity): {len(rows2)} rows")

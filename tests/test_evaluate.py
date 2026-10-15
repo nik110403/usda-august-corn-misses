@@ -101,6 +101,8 @@ def synth(n_out_aug: int = 4, m3_scale: Fraction = Fraction(1, 2)):
         pt = Fraction(100 + (s * 7) % 11)
         yield_[s], prod[s] = pt, Fraction(10000)
         for m in range(5, 12):
+            if m == 10 and s in (2013, 2025):
+                continue  # no October WASDE in 2013 or 2025 (PREREG 1)
             o = _origin(s, m)
             n = s - 1995
             resid = [Fraction(i - n // 2) for i in range(n)]
@@ -113,12 +115,13 @@ def synth(n_out_aug: int = 4, m3_scale: Fraction = Fraction(1, 2)):
                     q = Fraction(r["q"]) * m3_scale
                     rows.append(dict(r, model="M3", q=str(q), val=str(pt * (1 + q / 100)), m3_lp_status="0"))
             rows += conformal_rows("PROD", o, Fraction(10000), "Mbu", resid)
-            rows += conformal_rows("B0", o, pt, "bu/ac", resid[: max(0, n - 9)] if n > 9 else [])
+            rows += conformal_rows("B0", o, pt, "bu/ac", resid[: n - 5], min_n=9)  # B0 has s - 2000 own errors: scored from 2009
             if m >= 8:
+                b1ok = "0" if (s, m) == (2008, 10) else "1"  # B1 unavailable at Oct 2008 (PREREG-AMENDMENTS 2026-10-16 item 2)
                 rows.append(ev_row("B1", o, "level", level="9/10", unit="Mbu", point=Fraction(10000), q_lo="-5", q_hi="5",
-                                   val_lo=str(Fraction(9500)), val_hi=str(Fraction(10500)), scored="1"))
+                                   val_lo=str(Fraction(9500)), val_hi=str(Fraction(10500)), scored=b1ok))
                 rows.append(ev_row("B1y", o, "level", level="9/10", unit="bu/ac", point=pt, q_lo="-5", q_hi="5",
-                                   val_lo="95", val_hi="105", scored="1"))
+                                   val_lo="95", val_hi="105", scored=b1ok))
             if m > 5:
                 rows.append(ev_row("B2", o, "point", unit="bu/ac", point=pt))
     for s in range(2026 - n_out_aug, 2026):  # Aug misses
@@ -141,7 +144,7 @@ def table():
 
 def test_end_to_end_driver_on_synthetic_table(table, tmp_path):
     rows, truths = table
-    cuts = {"M2vM1_Jun", "B0vM1_Nov"}
+    cuts = {"M2vM1_Jun", "B0vM1_Nov"}  # a plain set of test ids is still accepted
     out = ev.evaluate(rows, truths, cuts, leakage=[{"group": "leakage test 1", "passed": 3, "failed": 0, "overlap_origins": "24 of 215"}])
     prim = out["primary"]
     # the truth is 11x the USDA point (a miss) for the last 4 seasons at EVERY horizon in this fixture, so the 80% band covers 18 of 22 everywhere
@@ -242,12 +245,22 @@ def test_refuses_without_valid_prereg_hash(tmp_path):
 
 
 def test_scope_cuts_file_default_empty_and_validated(tmp_path):
-    assert ev.read_cuts(tmp_path / "missing.csv") == set()
+    assert not ev.read_cuts(tmp_path / "missing.csv").any
     p = tmp_path / "scope_cuts.csv"
+    hdr = "item,kind,target,timestamp,commit\n"
+    p.write_text(hdr + "7,test,M3vM1_Jun,2026-01-01T00:00:00Z,abc\n")
+    assert ev.read_cuts(p).tests == {"M3vM1_Jun"}
+    for bad in ("1,test,nope,2026-01-01T00:00:00Z,abc", "1,test,leakage_test_1,2026-01-01T00:00:00Z,abc",
+                "1,test,M3vM1_Jun,yesterday,abc", "1,test,M3vM1_Jun,2026-01-01T00:00:00Z,",
+                "2,model,M1,2026-01-01T00:00:00Z,abc", "2,model,B0,2026-01-01T00:00:00Z,abc",
+                "5,horizon,Aug,2026-01-01T00:00:00Z,abc", "5,horizon,Nov,2026-01-01T00:00:00Z,abc",
+                "7,model,M2,2026-01-01T00:00:00Z,abc", "3,truth,primary,2026-01-01T00:00:00Z,abc", "4,table,B1_80,2026-01-01T00:00:00Z,abc",
+                "1,widget,x,2026-01-01T00:00:00Z,abc"):
+        p.write_text(hdr + bad + "\n")
+        with pytest.raises(SystemExit):
+            ev.read_cuts(p)
     p.write_text("test_id,reason,logged_utc,code_commit\nM3vM1_Jun,cut,2026-01-01T00:00:00Z,abc\n")
-    assert ev.read_cuts(p) == {"M3vM1_Jun"}
-    p.write_text("test_id,reason,logged_utc,code_commit\nnope,cut,x,y\n")
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit):  # the old schema is refused
         ev.read_cuts(p)
 
 
@@ -257,3 +270,200 @@ def test_family_size_and_groups():
     assert sum(i.startswith("M3vM1") for i in ids) == 5 and sum(i.startswith("M2vM1") for i in ids) == 6
     assert sum(i.startswith("M1cov") for i in ids) == 13 and sum(i.startswith("PRODcov80") for i in ids) == 7
     assert "M1cov80_Aug" not in ids and "M3vM1_Aug" not in ids and "M2vM1_May" not in ids
+
+
+# ---- F6a fix round 1: scope cuts remove scoring, B0 threshold, count assertions, gates ------------------------------------
+
+def _with_sens(truths):
+    return ev.Truths(truths.yield_, truths.prod, dict(truths.yield_), dict(truths.prod))
+
+
+def _written(out, tmp_path):
+    ev.write_outputs(out, tmp_path / "eval", "abc", "2026-01-01T00:00:00Z")
+    return {p.name: p for p in (tmp_path / "eval").iterdir()}
+
+
+def _csv_rows(path):
+    with path.open(newline="") as f:
+        return list(csv.DictReader(f))
+
+
+M2M3_TESTS = {t[0] for t in ev.FAMILY if t[2] in ("M2", "M3")} | {ev.PRIMARY_DM_ID}
+
+
+def test_tribune_case_cut_primary_dm_and_all_m2_m3_ids_leaves_no_m2_m3_number(tmp_path):
+    rows, truths = synth()
+    out = ev.evaluate(rows, _with_sens(truths), set(M2M3_TESTS))
+    files = _written(out, tmp_path)
+    for name, path in files.items():
+        if name in ("models_tried.csv", "family.csv"):
+            continue
+        text = path.read_text()
+        assert "M3 vs M1" not in text and "M2 vs M1" not in text, name
+        if name.endswith(".csv"):
+            assert not [r for r in _csv_rows(path) if r.get("model") in ("M2", "M3")], name
+    sens = files["sensitivity.csv"].read_text()
+    assert "M3" not in sens and "HLN-DM" not in sens
+    prim = files["primary.txt"].read_text()
+    assert "the pre-registered comparison was not run" in prim and "p = " not in prim and "t = " not in prim
+    assert out["primary"]["m3_wording"] == "the pre-registered comparison was not run" and "m3_p" not in out["primary"]
+    fam = {r["test_id"]: r for r in out["family.csv"]}
+    assert all(fam[t]["status"] == "cut" and fam[t]["p_raw"] == "1" and fam[t]["p_holm"] == "1" for t in M2M3_TESTS - {ev.PRIMARY_DM_ID})
+    cut = ev.make_cuts(tests=M2M3_TESTS)
+    assert cut.models == {"M2", "M3"}  # every test of a model cut -> the model is cut
+    assert {r["status"] for r in out["models_tried.csv"] if r["item"] in ("M2", "M3")} == {"cut"}
+
+
+def test_cut_model_m3_removes_all_m3_scoring(tmp_path):
+    rows, truths = synth()
+    out = ev.evaluate(rows, _with_sens(truths), ev.make_cuts(models={"M3"}))
+    files = _written(out, tmp_path)
+    assert any(r["model"] == "M2" for r in out["scores.csv"]) and not any(r["model"] == "M3" for r in out["scores.csv"])
+    for name, path in files.items():
+        if name.endswith(".csv") and name not in ("models_tried.csv", "family.csv"):
+            assert not [r for r in _csv_rows(path) if r.get("model") == "M3"], name
+    assert "M3 vs M1" not in files["sensitivity.csv"].read_text()
+    assert {r["status"] for r in out["family.csv"] if r["model"] == "M3"} == {"cut"}
+    assert any(r["model"] == "M2" for r in out["skill.csv"]) and not any(r["model"] == "M3" for r in out["skill.csv"])
+    assert out["primary"]["m3_wording"] == "the pre-registered comparison was not run"
+
+
+def test_cut_model_m2_removes_all_m2_scoring(tmp_path):
+    rows, truths = synth()
+    out = ev.evaluate(rows, _with_sens(truths), ev.make_cuts(models={"M2"}))
+    files = _written(out, tmp_path)
+    for name, path in files.items():
+        if name.endswith(".csv") and name not in ("models_tried.csv", "family.csv"):
+            assert not [r for r in _csv_rows(path) if r.get("model") == "M2"], name
+    assert {r["status"] for r in out["family.csv"] if r["model"] == "M2"} == {"cut"}
+    assert any(r["model"] == "M3" for r in out["scores.csv"]) and "m3_p" in out["primary"]
+
+
+def test_cut_truth_sensitivity_removes_every_sensitivity_row(tmp_path):
+    rows, truths = synth()
+    sens = _with_sens(truths)
+    base = ev.evaluate(rows, sens, set())
+    assert any(r["truth"] == "sensitivity" for r in base["coverage.csv"])
+    out = ev.evaluate(rows, sens, ev.make_cuts(truths={"sensitivity"}))
+    assert not any(r["truth"] == "sensitivity" for r in out["coverage.csv"])
+    assert any("cut (scope cut)" in ln for ln in out["primary.txt"])
+    assert {r["status"] for r in out["models_tried.csv"] if r["item"] == "variant: Quick Stats truth"} == {"cut"}
+
+
+def test_cut_table_b1_90_removes_b1_and_b1y_rows(tmp_path):
+    rows, truths = synth()
+    out = ev.evaluate(rows, truths, ev.make_cuts(tables={"B1_90"}))
+    for name in ("coverage.csv", "sharpness.csv"):
+        assert not [r for r in out[name] if r["model"] in ("B1", "B1y")], name
+    assert any(r["model"] == "B1" for r in ev.evaluate(rows, truths, set())["coverage.csv"])
+    assert {r["status"] for r in out["models_tried.csv"] if r["item"] == "B1"} == {"cut"}
+
+
+@pytest.mark.parametrize("h", ["May", "Jun", "Jul", "Oct"])
+def test_cut_horizon_removes_that_horizon_everywhere(h):
+    rows, truths = synth()
+    out = ev.evaluate(rows, _with_sens(truths), ev.make_cuts(horizons={h}))
+    for name, rs in out.items():
+        if name.endswith(".csv") and name not in ("models_tried.csv", "family.csv", "leakage.csv"):
+            assert not [r for r in rs if r.get("horizon") == h], name
+    assert all(r["status"] == "cut" for r in out["family.csv"] if r["horizon"] == h)
+    assert any(r["horizon"] == "Aug" for r in out["coverage.csv"])
+
+
+def test_cut_single_cov_test_removes_its_band_and_its_holm_entry():
+    rows, truths = synth()
+    out = ev.evaluate(rows, truths, {"M1cov50_Jun"})
+    assert not [r for r in out["coverage.csv"] if (r["model"], r["horizon"], r["level"]) == ("M1", "Jun", "1/2")]
+    assert not [r for r in out["split_half.csv"] if (r["model"], r["horizon"], r["level"]) == ("M1", "Jun", "1/2")]
+    assert any((r["model"], r["horizon"], r["level"]) == ("M1", "Jun", "4/5") for r in out["coverage.csv"])
+    assert {r["test_id"]: r["status"] for r in out["family.csv"]}["M1cov50_Jun"] == "cut"
+
+
+def test_cut_single_dm_test_gives_no_p_value_for_that_comparison():
+    rows, truths = synth()
+    out = ev.evaluate(rows, truths, {"M3vM1_Jul"})
+    assert not [r for r in out["sensitivity.csv"] if r["horizon"] == "Jul" and "HLN-DM" in r["measure"]]
+    assert [r for r in out["sensitivity.csv"] if r["horizon"] == "Sep" and "HLN-DM" in r["measure"]]
+    out = ev.evaluate(rows, truths, {ev.PRIMARY_DM_ID})
+    assert not [r for r in out["sensitivity.csv"] if r["horizon"] == "Aug" and "HLN-DM" in r["measure"]]
+    assert "m3_p" not in out["primary"]
+
+
+def test_cut_optional_has_no_effect_on_numbers():
+    rows, truths = synth()
+    a = ev.evaluate(rows, truths, set())
+    b = ev.evaluate(rows, truths, ev.make_cuts(optional={"extension", "writeup"}))
+    assert a["family.csv"] == b["family.csv"] and a["coverage.csv"] == b["coverage.csv"]
+
+
+def test_uncuttable_targets_are_refused():
+    for kw in ({"models": {"M1"}}, {"models": {"B0"}}, {"models": {"PROD"}}, {"horizons": {"Aug"}}, {"truths": {"primary"}},
+               {"tables": {"coverage"}}, {"tests": {"leakage_test_3"}}, {"tests": {"M1cov80_Aug"}}):
+        with pytest.raises(SystemExit):
+            ev.make_cuts(**kw)
+
+
+def test_scope_cuts_csv_roundtrip_applies_cuts(tmp_path):
+    p = tmp_path / "scope_cuts.csv"
+    p.write_text("item,kind,target,timestamp,commit\n" + "\n".join(['2,model,M2,2026-10-16T10:00:00Z,abc123', '5,horizon,Oct,2026-10-16T10:00:00Z,abc123', '3,truth,sensitivity,2026-10-16T10:00:00Z,abc123', '4,table,B1_90,2026-10-16T10:00:00Z,abc123', '1,optional,extension,2026-10-16T10:00:00Z,abc123', '7,test,M1cov50_Jun,2026-10-16T10:00:00Z,abc123']) + "\n")
+    c = ev.read_cuts(p)
+    assert (c.models, c.horizons, c.truths, c.tables, c.optional) == ({"M2"}, {"Oct"}, {"sensitivity"}, {"B1_90"}, {"extension"})
+    assert "M1cov50_Jun" in c.tests and "M2vM1_Aug" in c.tests and "M3vM1_Oct" in c.tests and "M1cov80_Oct" in c.tests
+    rows, truths = synth()
+    out = ev.evaluate(rows, _with_sens(truths), c)
+    assert not any(r["model"] in ("M2", "B1", "B1y") for r in out["coverage.csv"]) and not any(r["horizon"] == "Oct" for r in out["scores.csv"])
+
+
+def test_b0_scored_only_from_nine_own_errors_at_every_level():
+    o = _origin(2012, 8)
+    for n, want in ((8, "0"), (9, "1")):
+        rows = conformal_rows("B0", o, Fraction(100), "bu/ac", [Fraction(i) for i in range(n)], min_n=9)
+        assert {r["scored"] for r in rows if r["kind"] == "level" and Fraction(r["level"]) == HALF} == {want}
+        assert {r["scored"] for r in rows if r["kind"] == "tau" and Fraction(r["tau"]) in TAUS5} == {want}
+    rows, truths = synth()
+    d = ev.Data(rows, truths)
+    assert d.seasons("B0", "Aug", HALF) == d.seasons("B0", "Aug", EIGHTY) == list(range(2009, 2026))
+
+
+def test_preflight_fails_on_dropped_truth_and_on_wrong_counts():
+    rows, truths = synth()
+    t2 = ev.Truths({s: v for s, v in truths.yield_.items() if s != 2010}, truths.prod)
+    with pytest.raises(ev.PreregCountError, match="truth missing for 2010"):
+        ev.evaluate(rows, t2, set())
+    with pytest.raises(ev.PreregCountError, match="M1 Aug"):
+        ev.evaluate([r for r in rows if not (r["model"] == "M1" and r["season"] == "2010" and r["horizon"] == "Aug")], truths, set())
+    with pytest.raises(ev.PreregCountError, match="M1 Oct"):
+        ev.evaluate([r for r in rows if not (r["season"] == "2010" and r["horizon"] == "Oct")], truths, set())
+    ev.evaluate([r for r in rows if not (r["season"] == "2010" and r["horizon"] == "Oct")], truths, ev.make_cuts(horizons={"Oct"}))  # cut: fine
+
+
+def test_preflight_requires_b0_17_and_b1_oct_19():
+    rows, truths = synth()
+    with pytest.raises(ev.PreregCountError, match="B0 Aug"):
+        ev.evaluate([r for r in rows if not (r["model"] == "B0" and r["season"] == "2020" and r["horizon"] == "Aug")], truths, set())
+    with pytest.raises(ev.PreregCountError, match="B1 Oct"):
+        ev.evaluate([dict(r, scored="0") if (r["model"] == "B1" and r["season"] == "2010" and r["horizon"] == "Oct") else r for r in rows],
+                    truths, set())
+
+
+def test_leakage_failure_aborts_with_no_outputs(tmp_path):
+    from types import SimpleNamespace as NS
+    bad = NS(returncode=1, stdout="PASSED tests/test_leakage.py::test1_a\nFAILED tests/test_leakage.py::test2_b - boom\n")
+    with pytest.raises(SystemExit, match="leakage tests did not all pass"):
+        ev.parse_leakage(bad, tmp_path)
+    with pytest.raises(SystemExit):
+        ev.parse_leakage(NS(returncode=0, stdout=""), tmp_path)  # nothing collected is a failure too
+    ok = NS(returncode=0, stdout="PASSED tests/test_leakage.py::test1_a\nPASSED tests/test_models.py::test_x\n")
+    assert {r["group"] for r in ev.parse_leakage(ok, tmp_path)} == {"leakage test 1", "model-layer leakage"}
+
+
+def test_stale_forecasts_are_refused():
+    ident = {"code_tree": "t1", "store_sha256": "s1", "build_commit": "c"}
+    ok = [{"code_tree": "t1", "store_sha256": "s1"}] * 3
+    ev.check_fresh(ok, ident)
+    for bad in ([{"code_tree": "t0", "store_sha256": "s1"}], [{"code_tree": "t1", "store_sha256": "s0"}], [{"code_tree": "t1"}], [],
+                ok + [{"code_tree": "t1", "store_sha256": "s0"}]):
+        with pytest.raises(SystemExit):
+            ev.check_fresh(bad, ident)
+    with pytest.raises(SystemExit):
+        ev.check_fresh([{"code_tree": "t1+dirty", "store_sha256": "s1"}], dict(ident, code_tree="t1+dirty"))
