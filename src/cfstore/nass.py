@@ -55,9 +55,23 @@ CORRECTED_BY_TEXT = {
 
 
 # Corrected-only files whose reissue date is documented: the content became public on that date, so that is the
-# release_date (the normal date rule then keeps it out of earlier information sets). Source: checks/items-C.md section 14
-# (CropProd 2008-10-10 `_revision` text: "reissued on October 28"; CropProg 2015-08-03 `_correction`: "Update Alert - August 4, 2015").
-REISSUE_DATES = {("CropProd", "2008-10-10"): "2008-10-28", ("CropProg", "2015-08-03"): "2015-08-04"}
+# release_date (the normal date rule then keeps it out of earlier information sets). The date is parsed from the file's own
+# printed "Update Alert - <Month D, YYYY> ... reissued" line (reissue_date_from_text); REISSUE_DATES is the explicit cross-check
+# (a parsed date that disagrees with an entry raises) and the fallback for a file whose alert has no such line
+# (CropProd 2008-10-10 `_revision`: "this report was reissued on October 28", checks/items-C.md section 14).
+REISSUE_DATES = {("CropProd", "2008-10-10"): "2008-10-28", ("CropProg", "2015-08-03"): "2015-08-04",
+                 ("CropProg", "2015-11-23"): "2015-11-24", ("CropProdSu", "2015-01-12"): "2015-02-05"}
+_MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
+ALERT_RE = re.compile(r"Update\s+Alert\s*-\s*([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})(.{0,600})", re.I | re.S)
+
+
+def reissue_date_from_text(text: str) -> str | None:
+    """ISO date of the first printed 'Update Alert - <Month D, YYYY>' line whose following text says the report is reissued;
+    None if there is none."""
+    for m in ALERT_RE.finditer(text[:6000]):
+        if m.group(1).lower() in _MONTHS and re.search(r"reissued", re.sub(r"\s+", " ", m.group(4)), re.I):
+            return date(int(m.group(3)), _MONTHS.index(m.group(1).lower()) + 1, int(m.group(2))).isoformat()
+    return None
 
 
 def fetch_results(ident: str) -> list[dict]:
@@ -129,14 +143,20 @@ def select(ident: str, results: list[dict]) -> tuple[list[dict], list[dict], lis
                 why = f"correction copy of a date whose plain file {p['fname']} is kept (first-release rule)"
             log.append({**c["base"], "role": "excluded", "reason": why})
         flag = "v1_corrected_only" if p["corr"] else "v1"
-        if ident == "CropProdSu":
+        if ident == "CropProdSu" and not p["corr"]:
             rel, why = ld, "ESMIS date (Annual Summary carries no printed release date; checked against the January WASDE date in the tests)"
         elif p["corr"]:
             rel, why = ld, "corrected-only file: ESMIS listing date (the original is not in ESMIS)"
-            if (ident, ld) in REISSUE_DATES:
-                rel = REISSUE_DATES[(ident, ld)]
+            parsed, listed = reissue_date_from_text(p["text"]), REISSUE_DATES.get((ident, ld))
+            if parsed and listed and parsed != listed:
+                raise ValueError(f"{ident} {ld}: printed reissue date {parsed} != REISSUE_DATES entry {listed}")
+            if parsed or listed:
+                rel = parsed or listed
+                if rel <= ld:
+                    raise ValueError(f"{ident} {ld}: reissue date {rel} is not after the listing date")
+                src = "printed 'Update Alert' line" if parsed else "REISSUE_DATES fallback (no dated alert line)"
                 why = (f"corrected-only file; original ESMIS listing date {ld}, stamped at the documented reissue date {rel} "
-                       "(when its content became public; checks/items-C.md section 14)")
+                       f"({src}; when its content became public)")
             if (ident, ld) in CORRECTED_BY_TEXT:
                 why += "; " + CORRECTED_BY_TEXT[(ident, ld)]
         else:

@@ -398,7 +398,7 @@ crop_production_summary,2011-01-12,2011-01-12T08:30:00-05:00,data/raw/crop_produ
 crop_production_summary,2012-01-12,2012-01-12T08:30:00-05:00,data/raw/crop_production_summary/2012-01-12/472780/CropProdSu-01-12-2012.txt,v1,2
 crop_production_summary,2013-01-11,2013-01-11T12:00:00-05:00,data/raw/crop_production_summary/2013-01-11/472779/CropProdSu-01-11-2013.txt,v1,2
 crop_production_summary,2014-01-10,2014-01-10T12:00:00-05:00,data/raw/crop_production_summary/2014-01-10/472778/CropProdSu-01-10-2014.txt,v1,2
-crop_production_summary,2015-01-12,2015-01-12T12:00:00-05:00,data/raw/crop_production_summary/2015-01-12/472777/CropProdSu-01-12-2015_revision.txt,v1_corrected_only,2
+crop_production_summary,2015-02-05,2015-02-05T12:00:00-05:00,data/raw/crop_production_summary/2015-01-12/472777/CropProdSu-01-12-2015_revision.txt,v1_corrected_only,2
 crop_production_summary,2016-01-12,2016-01-12T12:00:00-05:00,data/raw/crop_production_summary/2016-01-12/472776/CropProdSu-01-12-2016.txt,v1,2
 crop_production_summary,2017-01-12,2017-01-12T12:00:00-05:00,data/raw/crop_production_summary/2017-01-12/472775/CropProdSu-01-12-2017.txt,v1,2
 crop_production_summary,2018-01-12,2018-01-12T12:00:00-05:00,data/raw/crop_production_summary/2018-01-12/472774/CropProdSu-01-12-2018.txt,v1,2
@@ -1142,7 +1142,7 @@ crop_progress,2015-10-26,2015-10-26T16:00:00-04:00,data/raw/crop_progress/2015-1
 crop_progress,2015-11-02,2015-11-02T16:00:00-05:00,data/raw/crop_progress/2015-11-02/210694/CropProg-11-02-2015.txt,v1,0
 crop_progress,2015-11-09,2015-11-09T16:00:00-05:00,data/raw/crop_progress/2015-11-09/210693/CropProg-11-09-2015.txt,v1,0
 crop_progress,2015-11-16,2015-11-16T16:00:00-05:00,data/raw/crop_progress/2015-11-16/210692/CropProg-11-16-2015.txt,v1,0
-crop_progress,2015-11-23,2015-11-23T16:00:00-05:00,data/raw/crop_progress/2015-11-23/210691/CropProg-11-23-2015_correction.txt,v1_corrected_only,0
+crop_progress,2015-11-24,2015-11-24T16:00:00-05:00,data/raw/crop_progress/2015-11-23/210691/CropProg-11-23-2015_correction.txt,v1_corrected_only,0
 crop_progress,2015-11-30,2015-11-30T16:00:00-05:00,data/raw/crop_progress/2015-11-30/210690/CropProg-11-30-2015.txt,v1,0
 crop_progress,2016-04-05,2016-04-05T16:00:00-04:00,data/raw/crop_progress/2016-04-05/210688/CropProg-04-05-2016.txt,v1,0
 crop_progress,2016-04-11,2016-04-11T16:00:00-04:00,data/raw/crop_progress/2016-04-11/210687/CropProg-04-11-2016.txt,v1,0

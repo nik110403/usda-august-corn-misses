@@ -361,16 +361,19 @@ def test_annual_summary_equals_january_wasde(store):
     """Annual Summary (each January; 8 Feb 2019) national corn yield/production == the same day's WASDE first-final line,
     and the Summary's release date is a WASDE release date (the first-final truth of STRATEGY 5.1)."""
     summ = sorted({r["release_date"] for r in store if r["series"] == "crop_production_summary.us_corn.yield"})
-    assert len(summ) == 32 and summ[0] == "1995-01-12" and summ[-1] == "2026-01-12"
+    assert len(summ) == 32 and summ[0] == "1995-01-12" and summ[-1] == "2026-01-12" and "2015-02-05" in summ and "2015-01-12" not in summ
     wasde_dates = {r["release_date"] for r in store if r["series"] == "wasde.us_corn.yield"}
     bad = []
     for d in summ:
-        assert d in wasde_dates, f"Annual Summary date {d} is not a WASDE date"
+        # the 2015 Summary exists in ESMIS only as `_revision`, stamped at its printed reissue (2015-02-05); the January WASDE
+        # it must equal is the one of the archived date 2015-01-12 (forage corrections; corn untouched)
+        w = "2015-01-12" if d == "2015-02-05" else d
+        assert w in wasde_dates, f"Annual Summary date {d} is not a WASDE date"
         ref = f"{int(d[:4]) - 1}/{d[2:4]}"
         sy, _ = _val(store, "crop_production_summary.us_corn.yield", ref, d)
         sp, _ = _val(store, "crop_production_summary.us_corn.production_kbu", ref, d)
-        wy, _ = _val(store, "wasde.us_corn.yield", ref, d)
-        wp, _ = _val(store, "wasde.us_corn.production", ref, d)
+        wy, _ = _val(store, "wasde.us_corn.yield", ref, w)
+        wp, _ = _val(store, "wasde.us_corn.production", ref, w)
         if sy != wy or abs(sp / 1000 - wp) > 0.5 + 1e-9:
             bad.append((d, sy, wy, sp / 1000, wp))
     print(f"Annual Summary vs January WASDE: {len(summ)} years, {len(bad)} mismatches {bad}")
@@ -440,11 +443,11 @@ def test_crop_progress_seasons(store):
 
 def test_crop_progress_corrected_only_and_exceptions(nass_rel):
     flagged = {r["release_date"] for r in nass_rel if r["series_root"] == "crop_progress" and r["revision_flag"] == "v1_corrected_only"}
-    assert flagged == {"1997-06-24", "2008-07-28", "2015-08-04", "2015-11-23"}
+    assert flagged == {"1997-06-24", "2008-07-28", "2015-08-04", "2015-11-24"}
     flagged = {r["release_date"] for r in nass_rel if r["series_root"] == "crop_production" and r["revision_flag"] == "v1_corrected_only"}
     assert flagged == {"2003-08-12", "2008-08-12", "2008-10-28", "2010-01-12"}
     flagged = {r["release_date"] for r in nass_rel if r["series_root"] == "crop_production_summary" and r["revision_flag"] == "v1_corrected_only"}
-    assert flagged == {"2015-01-12"}
+    assert flagged == {"2015-02-05"}
 
 
 def test_nass_release_counts(nass_rel):

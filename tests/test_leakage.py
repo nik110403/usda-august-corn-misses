@@ -267,10 +267,13 @@ def test3_trend_is_exact_ols_and_needs_two_points():
 # ---- Leakage test 4: origins on a Crop Progress release day -------------------------------------------------------
 
 def raw_crop_progress_dates() -> set[str]:
-    """Release dates of every Crop Progress report file on disk: printed 'Released' date; files without one, and corrected /
-    updated re-releases, take the directory (ESMIS) date, except the documented 2015-08-03 -> 08-04 reissue. Notices (no
-    'Week Ending' table) and byte-duplicate `_dup` copies are skipped."""
+    """Release dates of every Crop Progress report file on disk: printed 'Released' date; files without one take the directory
+    (ESMIS) date; corrected / updated re-releases take the directory date, except that a printed 'Update Alert - <date>' line
+    ("is being reissued") gives the reissue date (own regex, independent of nass.py). Notices (no 'Week Ending' table) and
+    byte-duplicate `_dup` copies are skipped."""
     from cfstore.parse_cp import released_date
+    alert = re.compile(r"Update\s+Alert\s*-\s*(\w+)\s+(\d+),\s*(\d{4})", re.I)
+    months = "January February March April May June July August September October November December".split()
     out = set()
     for path in (ROOT / "data/raw/crop_progress").glob("*/*/*.txt"):
         if path.parent.name.endswith("_dup"):
@@ -280,7 +283,8 @@ def raw_crop_progress_dates() -> set[str]:
             continue
         d = path.parts[-3]
         if "_correction" in path.name or "_revision" in path.name or d == "1997-06-24":
-            out.add("2015-08-04" if d == "2015-08-03" else d)
+            m = alert.search(text[:2500])
+            out.add(date(int(m.group(3)), months.index(m.group(1).capitalize()) + 1, int(m.group(2))).isoformat() if m else d)
             continue
         try:
             rel = released_date(text).isoformat()
@@ -343,12 +347,54 @@ def test_corrected_only_without_documented_reissue_is_admitted_as_archived(store
         assert all(r in build_features(store, o) for r in cp)  # guard passes (same date, same table time)
 
 
+def _q_ts(day, hh, mm):
+    return datetime.combine(date.fromisoformat(day), time(hh, mm), tzinfo=ZoneInfo("America/New_York")).isoformat()
+
+
+def _visible_at(store, row, day, hh, mm):
+    q = {**row, "release_date": day, "release_ts": _q_ts(day, hh, mm), "series": "wasde.us_corn.yield", "source_file": "q"}
+    return row in info_set(store, q)
+
+
 def test_crop_progress_2015_08_03_correction_is_dated_08_04(store):
     rows = [r for r in store if r["series"] == "crop_progress.us_corn.good_excellent" and r["source_file"].endswith("CropProg-08-03-2015_correction.txt")]
     assert len(rows) == 1 and rows[0]["release_date"] == "2015-08-04" and rows[0]["revision_flag"] == "v1_corrected_only"
     assert rows[0]["release_ts"].startswith("2015-08-04T16:00:00")
-    # a query at 2015-08-03 16:00 ET (the origin of that day) does not see it
-    q = {**rows[0], "release_date": "2015-08-03", "release_ts": "2015-08-03T16:00:00-04:00", "series": "wasde.us_corn.yield", "source_file": "q"}
-    assert rows[0] not in info_set(store, q)
-    nxt = {**q, "release_date": "2015-08-05", "release_ts": "2015-08-05T12:00:00-04:00"}
-    assert rows[0] in info_set(store, nxt)
+    r = rows[0]
+    # info_set admits non-own rows only with release_date strictly before the origin date (and ts before the origin ts): a
+    # same-day query is never enough, at any time. With the fix reverted (row dated 08-03) the 08-04 queries would see it.
+    assert not _visible_at(store, r, "2015-08-03", 16, 0)
+    assert not _visible_at(store, r, "2015-08-04", 15, 59)  # before the 16:00 release
+    assert not _visible_at(store, r, "2015-08-04", 16, 0)
+    assert not _visible_at(store, r, "2015-08-04", 23, 59)  # same date: still excluded
+    assert _visible_at(store, r, "2015-08-05", 12, 0)
+
+
+def test_other_reissue_dated_files_are_stamped_and_invisible_before_reissue(store):
+    """CropProg 2015-11-23 (-> 11-24) and the Annual Summary 2015-01-12 (-> 02-05): stamped at the printed Update Alert date."""
+    # Crop Progress 2015-11-23: November report, no corn condition row in the store -> assert that, plus the release row
+    assert not [r for r in store if r["series"].startswith("crop_progress.") and r["source_file"].endswith("CropProg-11-23-2015_correction.txt")]
+    with (DATA / "nass_releases.csv").open(newline="") as f:
+        rel = [r for r in csv.DictReader(f) if r["file"].endswith("CropProg-11-23-2015_correction.txt")]
+    assert len(rel) == 1 and rel[0]["release_date"] == "2015-11-24" and rel[0]["revision_flag"] == "v1_corrected_only"
+    rows = [r for r in store if r["series"].startswith("crop_production_summary.") and r["source_file"].endswith("CropProdSu-01-12-2015_revision.txt")]
+    assert len(rows) == 2 and {r["release_date"] for r in rows} == {"2015-02-05"} and {r["revision_flag"] for r in rows} == {"v1_corrected_only"}
+    for r in rows:
+        assert r["release_ts"].startswith("2015-02-05T")
+        assert not _visible_at(store, r, "2015-02-04", 23, 0)
+        assert not _visible_at(store, r, "2015-01-12", 12, 0)  # the archived Jan-12 date: not visible
+        assert not _visible_at(store, r, "2015-02-05", 23, 59)  # reissue day itself: still excluded (date rule)
+        assert _visible_at(store, r, "2015-02-06", 12, 0)
+
+
+def test_date_level_select_cannot_reach_the_2008_10_28_corrected_production(store, releases):
+    """The old check (date_level_select at the Oct-10 origin raises LeakageError) no longer applies: the corrected-only rows are
+    stamped 2008-10-28, so even the careless date-level join leaves them out. Equivalent checks: the careless join returns no
+    Oct-28 row, and the guard raises when such a row is forced into the Oct-10 feature set by any selector."""
+    o = next(o for o in origins(releases) if o["release_date"] == "2008-10-10")
+    cp = [r for r in store if r["series"].startswith("crop_production.") and r["release_date"] == "2008-10-28"]
+    assert cp
+    assert not [r for r in date_level_select(store, o) if r["release_date"] > "2008-10-10"]
+    build_features(store, o, select=date_level_select)  # no leak left for the careless join here
+    with pytest.raises(LeakageError):
+        build_features(store, o, select=lambda rows, origin: date_level_select(rows, origin) + cp)
