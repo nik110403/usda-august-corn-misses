@@ -307,11 +307,7 @@ def _val(store, series, ref, d):
 
 
 # Documented exceptions to WASDE == Crop Production on a joint date: (date, line) -> cause.
-WASDE_CP_EXCEPTIONS = {
-    ("2008-10-10", "yield"): "CropProd-10-10-2008_revision.txt is the Oct 28 corrected report under the Oct 10 date (v1_corrected_only); "
-                             "the WASDE of Oct 10 carries the original numbers (154.0)",
-    ("2008-10-10", "production"): "same cause: Oct 28 corrected production 12,033 M bu vs the original 12,200 M bu in the Oct 10 WASDE",
-}
+WASDE_CP_EXCEPTIONS: dict = {}  # none since the corrected-only 2008-10-10 file is dated at its documented reissue, 2008-10-28 (PREREG-AMENDMENTS.md)
 
 
 def wasde_cp_same_day(store):
@@ -337,7 +333,7 @@ def test_wasde_equals_crop_production_same_day(store):
     print(f"WASDE vs Crop Production: {len(dates)} joint dates, {n} line comparisons, {len(bad)} exceptions")
     for b in bad:
         print("   exception:", b, "->", WASDE_CP_EXCEPTIONS.get(b[:2]))
-    assert len(dates) == 125  # Aug 32 + Sep 32 + Oct 30 + Nov 31 (no Oct 2013, Oct 2025 reports)
+    assert len(dates) == 125  # (2008-10-28 replaces 2008-10-10) Aug 32 + Sep 32 + Oct 30 + Nov 31 (no Oct 2013, Oct 2025 reports)
     assert {d[5:7] for d in dates} == {"08", "09", "10", "11"}
     assert {b[:2] for b in bad} == set(WASDE_CP_EXCEPTIONS), bad
 
@@ -350,11 +346,12 @@ def test_wasde_cp_check_is_armed(store):
 
 
 def test_crop_production_2008_10_10_is_the_oct_28_vintage(store, releases):
-    """The 2008-10-10 Crop Production exists only as `_revision` (corrected Oct 28 numbers): flagged corrected-only, and
-    numerically equal to the WASDE reissue of 2008-10-28, not to the Oct 10 WASDE."""
-    cy, fl = _val(store, "crop_production.us_corn.yield", "2008/09", "2008-10-10")
-    cp, _ = _val(store, "crop_production.us_corn.production_kbu", "2008/09", "2008-10-10")
+    """The 2008-10-10 Crop Production exists only as `_revision` (corrected Oct 28 numbers): flagged corrected-only, stamped at
+    its documented reissue date 2008-10-28, and equal to the WASDE reissue of that day, not to the Oct 10 WASDE."""
+    cy, fl = _val(store, "crop_production.us_corn.yield", "2008/09", "2008-10-28")
+    cp, _ = _val(store, "crop_production.us_corn.production_kbu", "2008/09", "2008-10-28")
     assert fl == "v1_corrected_only"
+    assert not [r for r in store if r["series"].startswith("crop_production.") and r["release_date"] == "2008-10-10"]
     assert _val(store, "wasde.us_corn.yield", "2008/09", "2008-10-28")[0] == cy == 153.9
     assert round(cp / 1000) == _val(store, "wasde.us_corn.production", "2008/09", "2008-10-28")[0] == 12033
     assert _val(store, "wasde.us_corn.yield", "2008/09", "2008-10-10")[0] == 154.0
@@ -398,7 +395,7 @@ def test_crop_production_reliability_rows(store):
 
 # ---- Crop Progress -------------------------------------------------------------------------------------------------
 
-EXPECTED_NASS_COUNTS = {("crop_production", "v1"): 376, ("crop_production", "v1_corrected_only"): 3,
+EXPECTED_NASS_COUNTS = {("crop_production", "v1"): 375, ("crop_production", "v1_corrected_only"): 4,
                         ("crop_production_summary", "v1"): 31, ("crop_production_summary", "v1_corrected_only"): 1,
                         ("crop_progress", "v1"): 1103, ("crop_progress", "v1_corrected_only"): 4}
 # printed 'Released' dates on a Wednesday: 2012-10-31 (the Oct 29 report delayed by the Sandy closures), 2017-07-05 (July 4 week)
@@ -443,9 +440,9 @@ def test_crop_progress_seasons(store):
 
 def test_crop_progress_corrected_only_and_exceptions(nass_rel):
     flagged = {r["release_date"] for r in nass_rel if r["series_root"] == "crop_progress" and r["revision_flag"] == "v1_corrected_only"}
-    assert flagged == {"1997-06-24", "2008-07-28", "2015-08-03", "2015-11-23"}
+    assert flagged == {"1997-06-24", "2008-07-28", "2015-08-04", "2015-11-23"}
     flagged = {r["release_date"] for r in nass_rel if r["series_root"] == "crop_production" and r["revision_flag"] == "v1_corrected_only"}
-    assert flagged == {"2008-08-12", "2008-10-10", "2010-01-12"}
+    assert flagged == {"2003-08-12", "2008-08-12", "2008-10-28", "2010-01-12"}
     flagged = {r["release_date"] for r in nass_rel if r["series_root"] == "crop_production_summary" and r["revision_flag"] == "v1_corrected_only"}
     assert flagged == {"2015-01-12"}
 

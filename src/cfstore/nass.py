@@ -46,10 +46,18 @@ NASS_DATE_EXCEPTIONS = {
 # Files whose own text says they are a corrected / updated re-release although the file name carries no marker.
 # (ident, ESMIS listing date) -> why. They are v1_corrected_only: the original is not in ESMIS.
 CORRECTED_BY_TEXT = {
+    ("CropProd", "2003-08-12"): ("in-text Update Alert: the corn narrative said production up 2 percent from 2001, actual up 6 percent "
+                                 "(CropProd-08-12-2003.txt lines 27-30; tables untouched). Admitted as archived, PREREG-AMENDMENTS.md"),
     ("CropProg", "1997-06-24"): ("note in the file: 'These updated tables were released at 9:00 a.m., Tuesday, June 24, 1997. The crop "
                                  "condition in Kansas was published incorrectly on Monday' (printed date June 23). Stamped with the "
                                  "table time 16:00 ET on the ESMIS date, later than the 09:00 actual: conservative"),
 }
+
+
+# Corrected-only files whose reissue date is documented: the content became public on that date, so that is the
+# release_date (the normal date rule then keeps it out of earlier information sets). Source: checks/items-C.md section 14
+# (CropProd 2008-10-10 `_revision` text: "reissued on October 28"; CropProg 2015-08-03 `_correction`: "Update Alert - August 4, 2015").
+REISSUE_DATES = {("CropProd", "2008-10-10"): "2008-10-28", ("CropProg", "2015-08-03"): "2015-08-04"}
 
 
 def fetch_results(ident: str) -> list[dict]:
@@ -125,6 +133,10 @@ def select(ident: str, results: list[dict]) -> tuple[list[dict], list[dict], lis
             rel, why = ld, "ESMIS date (Annual Summary carries no printed release date; checked against the January WASDE date in the tests)"
         elif p["corr"]:
             rel, why = ld, "corrected-only file: ESMIS listing date (the original is not in ESMIS)"
+            if (ident, ld) in REISSUE_DATES:
+                rel = REISSUE_DATES[(ident, ld)]
+                why = (f"corrected-only file; original ESMIS listing date {ld}, stamped at the documented reissue date {rel} "
+                       "(when its content became public; checks/items-C.md section 14)")
             if (ident, ld) in CORRECTED_BY_TEXT:
                 why += "; " + CORRECTED_BY_TEXT[(ident, ld)]
         else:

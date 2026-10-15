@@ -1,4 +1,4 @@
-"""B0 trend pieces (STRATEGY 5.2, leakage test 3): linear OLS of first-final yield on season, fitted only on finals
+"""B0 trend pieces (STRATEGY 5.2, PREREG 3, leakage test 3): linear OLS of first-final yield on season, fitted only on finals of crops from 1995 on (at least 5 required)
 released strictly before the origin. No score, coverage or interval is computed here (PREREG: nothing scored before F6).
 
 First-final of season s = the yield for crop s in the first WASDE of calendar year s+1 that carries it (the January
@@ -11,6 +11,8 @@ from .asof import LeakageError, ts
 from .skeleton import truth_rows
 
 YIELD = "wasde.us_corn.yield"
+FIRST_SEASON = 1995  # PREREG 3 B0: first-finals of crops from 1995 on
+MIN_FINALS = 5  # PREREG 3 B0: at least 5 required
 
 
 @dataclass(frozen=True)
@@ -53,7 +55,7 @@ def first_finals(store: list[dict]) -> list[tuple[int, Fraction, dict]]:
 def finals_before(store: list[dict], origin: dict) -> list[tuple[int, Fraction, dict]]:
     """The guarded selector: first-finals whose release_ts is strictly earlier than the origin's release_ts."""
     o_ts = ts(origin)
-    return [f for f in first_finals(store) if ts(f[2]) < o_ts]
+    return [f for f in first_finals(store) if f[0] >= FIRST_SEASON and ts(f[2]) < o_ts]
 
 
 def assert_finals_before(finals: list[tuple[int, Fraction, dict]], origin: dict) -> None:
@@ -67,4 +69,6 @@ def trend_at(store: list[dict], origin: dict) -> Trend:
     """Trend fitted for `origin` on the finals released before it (expanding window), guard asserted."""
     finals = finals_before(store, origin)
     assert_finals_before(finals, origin)
+    if len(finals) < MIN_FINALS:
+        raise ValueError(f"B0 trend needs at least {MIN_FINALS} first-finals (PREREG 3), got {len(finals)} before {origin['release_date']}")
     return fit_trend(finals)

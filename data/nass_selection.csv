@@ -724,7 +724,7 @@ CropProg,2015-07-06,210711,CropProg-07-06-2015.txt,primary,2015-07-06,v1,printed
 CropProg,2015-07-13,210710,CropProg-07-13-2015.txt,primary,2015-07-13,v1,printed release date == ESMIS date
 CropProg,2015-07-20,210709,CropProg-07-20-2015.txt,primary,2015-07-20,v1,printed release date == ESMIS date
 CropProg,2015-07-27,210708,CropProg-07-27-2015.txt,primary,2015-07-27,v1,printed release date == ESMIS date
-CropProg,2015-08-03,210707,CropProg-08-03-2015_correction.txt,primary,2015-08-03,v1_corrected_only,corrected-only file: ESMIS listing date (the original is not in ESMIS)
+CropProg,2015-08-03,210707,CropProg-08-03-2015_correction.txt,primary,2015-08-04,v1_corrected_only,"corrected-only file; original ESMIS listing date 2015-08-03, stamped at the documented reissue date 2015-08-04 (when its content became public; checks/items-C.md section 14)"
 CropProg,2015-08-10,210706,CropProg-08-10-2015.txt,primary,2015-08-10,v1,printed release date == ESMIS date
 CropProg,2015-08-17,210705,CropProg-08-17-2015.txt,primary,2015-08-17,v1,printed release date == ESMIS date
 CropProg,2015-08-24,210704,CropProg-08-24-2015.txt,primary,2015-08-24,v1,printed release date == ESMIS date
@@ -1223,7 +1223,7 @@ CropProd,2003-04-10,666350,CropProd-04-10-2003.txt,primary,2003-04-10,v1,printed
 CropProd,2003-05-12,666349,CropProd-05-12-2003.txt,primary,2003-05-12,v1,printed release date == ESMIS date
 CropProd,2003-06-11,666348,CropProd-06-11-2003.txt,primary,2003-06-11,v1,printed release date == ESMIS date
 CropProd,2003-07-11,666347,CropProd-07-11-2003.txt,primary,2003-07-11,v1,printed release date == ESMIS date
-CropProd,2003-08-12,666346,CropProd-08-12-2003.txt,primary,2003-08-12,v1,printed release date == ESMIS date
+CropProd,2003-08-12,666346,CropProd-08-12-2003.txt,primary,2003-08-12,v1_corrected_only,"corrected-only file: ESMIS listing date (the original is not in ESMIS); in-text Update Alert: the corn narrative said production up 2 percent from 2001, actual up 6 percent (CropProd-08-12-2003.txt lines 27-30; tables untouched). Admitted as archived, PREREG-AMENDMENTS.md"
 CropProd,2003-09-11,666345,CropProd-09-11-2003.txt,primary,2003-09-11,v1,printed release date == ESMIS date
 CropProd,2003-10-10,666344,CropProd-10-10-2003.txt,primary,2003-10-10,v1,printed release date == ESMIS date
 CropProd,2003-11-12,666343,CropProd-11-12-2003.txt,primary,2003-11-12,v1,printed release date == ESMIS date
@@ -1285,7 +1285,7 @@ CropProd,2008-06-10,666286,CropProd-06-10-2008.txt,primary,2008-06-10,v1,printed
 CropProd,2008-07-11,666285,CropProd-07-11-2008.txt,primary,2008-07-11,v1,printed release date == ESMIS date
 CropProd,2008-08-12,666284,CropProd-08-12-2008_revision.txt,primary,2008-08-12,v1_corrected_only,corrected-only file: ESMIS listing date (the original is not in ESMIS)
 CropProd,2008-09-12,666283,CropProd-09-12-2008.txt,primary,2008-09-12,v1,printed release date == ESMIS date
-CropProd,2008-10-10,666282,CropProd-10-10-2008_revision.txt,primary,2008-10-10,v1_corrected_only,corrected-only file: ESMIS listing date (the original is not in ESMIS)
+CropProd,2008-10-10,666282,CropProd-10-10-2008_revision.txt,primary,2008-10-28,v1_corrected_only,"corrected-only file; original ESMIS listing date 2008-10-10, stamped at the documented reissue date 2008-10-28 (when its content became public; checks/items-C.md section 14)"
 CropProd,2008-11-10,666281,CropProd-11-10-2008.txt,primary,2008-11-10,v1,printed release date == ESMIS date
 CropProd,2008-12-11,666280,CropProd-12-11-2008.txt,primary,2008-12-11,v1,printed release date == ESMIS date
 CropProd,2009-01-12,666279,CropProd-01-12-2009.txt,primary,2009-01-12,v1,printed release date == ESMIS date

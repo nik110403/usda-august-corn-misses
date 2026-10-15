@@ -102,7 +102,7 @@ crop_production,2003-04-10,2003-04-10T08:30:00-04:00,data/raw/crop_production/20
 crop_production,2003-05-12,2003-05-12T08:30:00-04:00,data/raw/crop_production/2003-05-12/666349/CropProd-05-12-2003.txt,v1,0
 crop_production,2003-06-11,2003-06-11T08:30:00-04:00,data/raw/crop_production/2003-06-11/666348/CropProd-06-11-2003.txt,v1,0
 crop_production,2003-07-11,2003-07-11T08:30:00-04:00,data/raw/crop_production/2003-07-11/666347/CropProd-07-11-2003.txt,v1,0
-crop_production,2003-08-12,2003-08-12T08:30:00-04:00,data/raw/crop_production/2003-08-12/666346/CropProd-08-12-2003.txt,v1,10
+crop_production,2003-08-12,2003-08-12T08:30:00-04:00,data/raw/crop_production/2003-08-12/666346/CropProd-08-12-2003.txt,v1_corrected_only,10
 crop_production,2003-09-11,2003-09-11T08:30:00-04:00,data/raw/crop_production/2003-09-11/666345/CropProd-09-11-2003.txt,v1,10
 crop_production,2003-10-10,2003-10-10T08:30:00-04:00,data/raw/crop_production/2003-10-10/666344/CropProd-10-10-2003.txt,v1,10
 crop_production,2003-11-12,2003-11-12T08:30:00-05:00,data/raw/crop_production/2003-11-12/666343/CropProd-11-12-2003.txt,v1,10
@@ -164,7 +164,7 @@ crop_production,2008-06-10,2008-06-10T08:30:00-04:00,data/raw/crop_production/20
 crop_production,2008-07-11,2008-07-11T08:30:00-04:00,data/raw/crop_production/2008-07-11/666285/CropProd-07-11-2008.txt,v1,0
 crop_production,2008-08-12,2008-08-12T08:30:00-04:00,data/raw/crop_production/2008-08-12/666284/CropProd-08-12-2008_revision.txt,v1_corrected_only,10
 crop_production,2008-09-12,2008-09-12T08:30:00-04:00,data/raw/crop_production/2008-09-12/666283/CropProd-09-12-2008.txt,v1,10
-crop_production,2008-10-10,2008-10-10T08:30:00-04:00,data/raw/crop_production/2008-10-10/666282/CropProd-10-10-2008_revision.txt,v1_corrected_only,10
+crop_production,2008-10-28,2008-10-28T08:30:00-04:00,data/raw/crop_production/2008-10-10/666282/CropProd-10-10-2008_revision.txt,v1_corrected_only,10
 crop_production,2008-11-10,2008-11-10T08:30:00-05:00,data/raw/crop_production/2008-11-10/666281/CropProd-11-10-2008.txt,v1,10
 crop_production,2008-12-11,2008-12-11T08:30:00-05:00,data/raw/crop_production/2008-12-11/666280/CropProd-12-11-2008.txt,v1,0
 crop_production,2009-01-12,2009-01-12T08:30:00-05:00,data/raw/crop_production/2009-01-12/666279/CropProd-01-12-2009.txt,v1,0
@@ -1126,7 +1126,7 @@ crop_progress,2015-07-06,2015-07-06T16:00:00-04:00,data/raw/crop_progress/2015-0
 crop_progress,2015-07-13,2015-07-13T16:00:00-04:00,data/raw/crop_progress/2015-07-13/210710/CropProg-07-13-2015.txt,v1,1
 crop_progress,2015-07-20,2015-07-20T16:00:00-04:00,data/raw/crop_progress/2015-07-20/210709/CropProg-07-20-2015.txt,v1,1
 crop_progress,2015-07-27,2015-07-27T16:00:00-04:00,data/raw/crop_progress/2015-07-27/210708/CropProg-07-27-2015.txt,v1,1
-crop_progress,2015-08-03,2015-08-03T16:00:00-04:00,data/raw/crop_progress/2015-08-03/210707/CropProg-08-03-2015_correction.txt,v1_corrected_only,1
+crop_progress,2015-08-04,2015-08-04T16:00:00-04:00,data/raw/crop_progress/2015-08-03/210707/CropProg-08-03-2015_correction.txt,v1_corrected_only,1
 crop_progress,2015-08-10,2015-08-10T16:00:00-04:00,data/raw/crop_progress/2015-08-10/210706/CropProg-08-10-2015.txt,v1,1
 crop_progress,2015-08-17,2015-08-17T16:00:00-04:00,data/raw/crop_progress/2015-08-17/210705/CropProg-08-17-2015.txt,v1,1
 crop_progress,2015-08-24,2015-08-24T16:00:00-04:00,data/raw/crop_progress/2015-08-24/210704/CropProg-08-24-2015.txt,v1,1

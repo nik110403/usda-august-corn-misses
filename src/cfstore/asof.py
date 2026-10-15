@@ -46,14 +46,16 @@ def origins(release_rows: list[dict]) -> list[dict]:
 
 def is_own_release(row: dict, origin: dict) -> bool:
     """The origin's own WASDE (its first-release file only, never a logged v2 re-post), and the
-    Crop Production released jointly with it (same ESMIS date), except a corrected-only vintage: the file under that
-    date holds later (corrected) numbers, e.g. Crop Production 2008-10-10 is the Oct 28 `_revision`."""
+    Crop Production released jointly with it (same release_date). NASS rows use the printed release date; a
+    corrected-only file whose reissue date is documented is dated at the reissue (e.g. Crop Production 2008-10-10 is
+    stamped 2008-10-28), so it is never the Oct-10 origin's joint release; one without a documented reissue date is
+    admitted as archived (PREREG 1; PREREG-AMENDMENTS.md)."""
     root = row["series"].split(".")[0]
     if row["release_date"] != origin["release_date"]:
         return False
     if root == "wasde":
         return row.get("source_file") == origin.get("file") and row.get("revision_flag") != "v2_repost"
-    return root == "crop_production" and row.get("revision_flag") != "v1_corrected_only"
+    return root == "crop_production"
 
 
 def _guard_exempt(row: dict, origin: dict) -> bool:
@@ -64,15 +66,16 @@ def _guard_exempt(row: dict, origin: dict) -> bool:
     root = row["series"].split(".")[0]
     if root == "wasde":
         return row.get("source_file") == origin.get("file") and row.get("revision_flag") != "v2_repost"
-    return root == "crop_production" and row.get("revision_flag") != "v1_corrected_only"
+    return root == "crop_production"
 
 
 def info_set(rows: list[dict], origin: dict) -> list[dict]:
     """PREREG 1: a row that is not the origin's own release is admitted only if its release_date is strictly earlier
     than the origin's date AND release_ts < origin_ts. release_date of WASDE TXT-era originals is the report's cover
     date (equal to the ESMIS date except the logged exceptions in data/txt_selection.csv); corrected-only, reissue and
-    repost files take the ESMIS listing date; XML-era cover dates are not compared with the listing; other series use the
-    ESMIS date. Any other series released on the origin's date counts as released the next day. Logged v2 re-posts are
+    repost files take the ESMIS listing date (or the documented reissue date for NASS corrected-only files); XML-era cover
+    dates are not compared with the listing; Crop Progress and Crop Production use the printed release date (ESMIS date
+    where a few files are mis-listed, see data/nass_selection.csv); other series use the ESMIS date. Any other series released on the origin's date counts as released the next day. Logged v2 re-posts are
     sensitivity-only: excluded."""
     o_ts = ts(origin)
     return [r for r in rows if r.get("revision_flag") != "v2_repost"
