@@ -7,8 +7,8 @@ from pathlib import Path
 
 from .fetch import DATA, ROOT, fetch, read_manifest
 from .listing import build_listing, fetch_listing, first_release_files, write_listing
-from .parse import parse_corn, parse_corn_xls
-from .parse_txt import has_corn_block, is_correction_note, parse_corn_txt, parse_header
+from .parse import parse_corn, parse_corn_xls, wasde_number
+from .parse_txt import correction_marker, has_corn_block, parse_corn_txt, parse_header
 from .times import release_ts
 
 STORE_CSV = DATA / "store.csv"
@@ -33,10 +33,20 @@ HEADER_DATE_EXCEPTIONS = {
 }
 
 
-def select_txt(rows: list[dict]) -> tuple[list[dict], list[dict]]:
+def same_corn_values(new: list[dict], old: list[dict]) -> str:
+    """Flag for a later file of an already-released WASDE number: identical values on every shared
+    (series, reference_period) -> v2_repost (sensitivity only); otherwise v1_reissue (new information)."""
+    o = {(r["series"], r["reference_period"]): r["value"] for r in old}
+    shared = [(r, o[(r["series"], r["reference_period"])]) for r in new if (r["series"], r["reference_period"]) in o]
+    return "v2_repost" if shared and all(r["value"] == v for r, v in shared) else "v1_reissue"
+
+
+def select_txt(rows: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
     """TXT era (before XML_FROM): fetch every report-named TXT, read its cover (WASDE number + date) and pick
-    one primary file per WASDE number. Returns (primaries, selection-log rows). Raises on anything unexpected."""
-    seen_urls, cands, log = set(), {}, []
+    one primary file per WASDE number. Returns (primaries, extras, selection-log rows): extras are later files
+    of the same number that are not byte-identical (reposts / reissues, classified in build_store).
+    A primary whose head carries a correction marker is a corrected copy: v1_corrected_only. Raises on anything unexpected."""
+    seen_urls, cands, log, extras = set(), {}, [], []
     for r in rows:
         if r["ext"] != "txt" or r["release_date"] >= XML_FROM or r["url"] in seen_urls:
             continue  # repeated listing rows (same file under several ESMIS entries) collapse by URL
@@ -55,16 +65,20 @@ def select_txt(rows: list[dict]) -> tuple[list[dict], list[dict]]:
             continue
         if hdr is None:
             raise ValueError(f"report with corn table but no cover (WASDE number + date): {path}")
-        corr = bool(re.search(r"_revision", r["fname"])) or is_correction_note(text)
-        cands.setdefault(hdr[0], []).append({**base, "path": path, "text": text, "hdr": hdr, "corr": corr})
+        marker = correction_marker(text) or ("file name _revision" if "_revision" in r["fname"] else None)
+        cands.setdefault(hdr[0], []).append({**base, "path": path, "text": text, "hdr": hdr, "corr": marker is not None,
+                                             "marker": marker})
     prim = []
     for no, cs in sorted(cands.items()):
         cs.sort(key=lambda c: (c["corr"], c["listing_date"], c["fname"]))
         p = cs[0]
         for c in cs[1:]:
+            if c["path"].read_bytes() != p["path"].read_bytes():
+                extras.append({**c, "no": no, "primary": p})
+                continue
             log.append({k: c[k] for k in ("listing_date", "listing_id", "fname")} | {
                 "wasde_no": no, "header_date": c["hdr"][1].isoformat(), "release_date": "", "revision_flag": "",
-                "role": "excluded", "reason": f"later/corrected file for WASDE-{no}; primary is {p['fname']} (first, non-correction wins)"})
+                "role": "excluded", "reason": f"byte-identical to primary {p['fname']} (first, non-correction wins)"})
         ld, hd = p["listing_date"], p["hdr"][1].isoformat()
         if hd != ld:
             if HEADER_DATE_EXCEPTIONS.get(ld, (None,))[0] != hd:
@@ -72,6 +86,8 @@ def select_txt(rows: list[dict]) -> tuple[list[dict], list[dict]]:
         rel = ld if p["corr"] else hd
         flag = "v1_corrected_only" if p["corr"] else "v1"
         reason = HEADER_DATE_EXCEPTIONS[ld][1] if hd != ld else "cover date == ESMIS date"
+        if p["marker"]:
+            reason += f"; correction marker: {p['marker']!r}"
         p.update(release_date=rel, flag=flag)
         prim.append(p)
         log.append({k: p[k] for k in ("listing_date", "listing_id", "fname")} | {
@@ -83,7 +99,7 @@ def select_txt(rows: list[dict]) -> tuple[list[dict], list[dict]]:
     if [p["release_date"] for p in prim] != sorted(p["release_date"] for p in prim):
         raise ValueError("WASDE numbers and release dates are not in the same order")
     log.sort(key=lambda r: (r["listing_date"], r["fname"]))
-    return prim, log
+    return prim, extras, log
 
 
 def build_store() -> dict:
@@ -109,15 +125,37 @@ def build_store() -> dict:
                           "revision_flag": flag})
         return man["local_path"]
 
-    prim_txt, sel_log = select_txt(rows)
+    prim_txt, extras, sel_log = select_txt(rows)
+    parsed_by_no = {}
     for p in prim_txt:
         d = p["release_date"]
         ts, src = release_ts("wasde", date.fromisoformat(d))
-        parsed = parse_corn_txt(p["text"], p["hdr"][1].month)
+        parsed = parsed_by_no[p["hdr"][0]] = parse_corn_txt(p["text"], p["hdr"][1].month)
         src_file = emit(d, ts, src, p["path"], parsed, p["flag"])
         rel.append({"release_date": d, "release_ts": ts.isoformat(), "file": src_file, "revision_flag": p["flag"],
                     "n_values": len(parsed)})
+    for c in extras:  # later, non-identical file of an already-released WASDE number
+        d = c["listing_date"]  # the day it became visible
+        ts, src = release_ts("wasde", date.fromisoformat(d))
+        parsed = parse_corn_txt(c["text"], c["hdr"][1].month)
+        flag = same_corn_values(parsed, parsed_by_no[c["no"]])
+        src_file = emit(d, ts, src, c["path"], parsed, flag)
+        if flag == "v1_reissue":
+            rel.append({"release_date": d, "release_ts": ts.isoformat(), "file": src_file, "revision_flag": flag,
+                        "n_values": len(parsed)})
+        sel_log.append({k: c[k] for k in ("listing_date", "listing_id", "fname")} | {
+            "wasde_no": c["no"], "header_date": c["hdr"][1].isoformat(), "release_date": d, "revision_flag": flag,
+            "role": "reissue" if flag == "v1_reissue" else "repost",
+            "reason": f"later file of WASDE-{c['no']} (primary {c['primary']['fname']}); "
+                      + ("corn values differ: a reissue, its own store release, never an origin"
+                         if flag == "v1_reissue" else "identical corn values: sensitivity-only repost")})
+    sel_log.sort(key=lambda r: (r["listing_date"], r["fname"]))
+    print("TXT files flagged corrected (marker in file head):")
+    for r in sel_log:
+        if r["role"] == "primary" and "correction marker" in r["reason"]:
+            print("  ", r["listing_date"], r["fname"], r["revision_flag"], "|", r["reason"].split("correction marker: ")[1])
 
+    seen_xml = {}
     for d, f in sorted(xmls.items()):
         path = fetch(f["url"], f"wasde/{d}/{f['listing_id']}", f["fname"])
         flag = "v1"
@@ -125,6 +163,15 @@ def build_store() -> dict:
             flag = "v1_corrected_only"
         ts, src = release_ts("wasde", date.fromisoformat(d))
         parsed = parse_corn(path.read_bytes())
+        no = wasde_number(path.read_bytes())
+        if no in seen_xml:  # same WASDE number on a later date: a repost (identical values) or a reissue
+            flag = same_corn_values(parsed, seen_xml[no])
+            src_file = emit(d, ts, src, path, parsed, flag)
+            if flag == "v1_reissue":
+                rel.append({"release_date": d, "release_ts": ts.isoformat(), "file": src_file, "revision_flag": flag,
+                            "n_values": len(parsed)})
+            continue
+        seen_xml[no] = parsed
         if d in variant_dates and not f["fname"].upper().startswith("ORIG") and d in orig_xls:
             # ORIG xls is the first release; the unlabelled XML is a post-correction v2 re-post (sensitivity only)
             o = orig_xls[d]
@@ -157,7 +204,7 @@ def build_store() -> dict:
     n_flag = sum(1 for r in rel if r["revision_flag"] != "v1")
     return {"listing_rows_raw": len(results), "listing_dates": len(all_dates),
             "dup_rows": len(results) - len(all_dates), "txt_releases": len(prim_txt),
-            "xml_releases_parsed": len(rel) - len(prim_txt),
+            "xml_releases_parsed": sum(r["release_date"] >= XML_FROM for r in rel),
             "flagged": n_flag, "store_rows": len(store)}
 
 

@@ -57,8 +57,10 @@ def _guard_exempt(row: dict, origin: dict) -> bool:
 
 
 def info_set(rows: list[dict], origin: dict) -> list[dict]:
-    """PREREG 1: a row that is not the origin's own release is admitted only if its ESMIS date is
-    strictly earlier than the origin's date AND release_ts < origin_ts. Any other series released on the
+    """PREREG 1 (release_date = the report's cover date, which equals the ESMIS date except for the logged
+    exceptions in data/txt_selection.csv; other series use the ESMIS date): a row that is not the origin's own
+    release is admitted only if its release_date is strictly earlier than the origin's date AND
+    release_ts < origin_ts. Any other series released on the
     origin's date counts as released the next day. Logged v2 re-posts are sensitivity-only: excluded."""
     o_ts = ts(origin)
     return [r for r in rows if r.get("revision_flag") != "v2_repost"

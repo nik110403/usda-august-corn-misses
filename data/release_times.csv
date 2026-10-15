@@ -1,6 +1,6 @@
 series,valid_from,valid_to,local_time,tz,day_rule,source
-wasde,1995-01-01,2012-12-31,08:30,America/New_York,esmis_date,"checks/items-C.md section 4: WASDE-317 wasde-08-12-1996.txt (sha 8ecc5333) 'The next issue of this report will be released 8:30 a.m. EST'; wasde 2003-08-12 'released 8:30 a.m. ET'"
-wasde,2013-01-01,9999-12-31,12:00,America/New_York,esmis_date,"checks/items-C.md section 4: USDA announcement 2012-09-19 via Hagstrom Report (sha 5289208e) 'noon ... beginning January 1'; WASDE-521 (Aug 2013) 'will be released at 12:00 noon ET'"
+wasde,1995-01-01,2012-12-31,08:30,America/New_York,cover_date,"checks/items-C.md section 4: WASDE-317 wasde-08-12-1996.txt (sha 8ecc5333) 'The next issue of this report will be released 8:30 a.m. EST'; wasde 2003-08-12 'released 8:30 a.m. ET'"
+wasde,2013-01-01,9999-12-31,12:00,America/New_York,cover_date,"checks/items-C.md section 4: USDA announcement 2012-09-19 via Hagstrom Report (sha 5289208e) 'noon ... beginning January 1'; WASDE-521 (Aug 2013) 'will be released at 12:00 noon ET'"
 crop_production,1995-01-01,2012-12-31,08:30,America/New_York,esmis_date,"checks/items-C.md section 4: CropProd-08-12-1996.txt 'The next Crop Production report will be released at 8:30 a.m. ET'"
 crop_production,2013-01-01,9999-12-31,12:00,America/New_York,esmis_date,"checks/items-C.md section 4: same USDA announcement 2012-09-19 (Hagstrom copy) lists Crop Production at noon from January 2013"
 grain_stocks,1995-01-01,2012-12-31,08:30,America/New_York,esmis_date,"checks/items-C.md section 4: GraiStoc-09-30-1997.txt 'released at 8:30 a.m. ET on January 13'"

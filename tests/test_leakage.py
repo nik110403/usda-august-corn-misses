@@ -122,7 +122,7 @@ def test_own_release_matches_first_release_file(store, releases):
 
 def test_v2_only_dates_flagged_and_2013_07_11_primary_is_orig_xls(store, releases):
     flagged = {r["release_date"] for r in releases if r["revision_flag"] == "v1_corrected_only"}
-    assert flagged == {"1996-03-14", "2006-03-13", "2024-12-10", "2025-04-10", "2025-05-12", "2026-05-12", "2026-06-11"}
+    assert flagged == {"1995-09-12", "1996-03-14", "1998-05-12", "1998-11-10", "2006-03-13", "2006-06-09", "2024-12-10", "2025-04-10", "2025-05-12", "2026-05-12", "2026-06-11"}
     jul = [r for r in store if r["release_date"] == "2013-07-11"]
     prim = [r for r in jul if r["revision_flag"] == "v1"]
     rep = [r for r in jul if r["revision_flag"] == "v2_repost"]
