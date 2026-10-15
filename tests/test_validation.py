@@ -6,14 +6,17 @@ bushels and note 'Totals may not add due to rounding').
 """
 import collections
 import csv
+import hashlib
 import re
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
 
 from cfstore.fetch import DATA, ROOT
 from cfstore.parse import parse_corn
+from cfstore.parse_cp import parse_progress
+from cfstore.parse_prod import parse_corn_table, parse_reliability
 from cfstore.parse_txt import MONTHS, parse_corn_txt, parse_header
 from cfstore.store import HEADER_DATE_EXCEPTIONS, TXT_NUMBERS, XML_FROM, read_store
 
@@ -34,6 +37,8 @@ def releases():
 def vintages(store):
     g = collections.defaultdict(dict)
     for r in store:
+        if not r["series"].startswith("wasde.us_corn."):
+            continue  # NASS series (Crop Progress / Crop Production) are not balance-sheet vintages
         g[(r["release_date"], r["revision_flag"], r["source_file"], r["reference_period"])][r["series"].rsplit(".", 1)[1]] = float(r["value"])
     return g
 
@@ -284,3 +289,306 @@ def test_cross_vintage_covers_both_eras(store, releases):
     assert n > 1000
     n_all, _ = cross_vintage_diffs(store, releases)
     assert n_all - n > 1000
+
+
+# ==== F4c: NASS series (Crop Progress, Crop Production, Annual Summary) ==============================================
+
+@pytest.fixture(scope="module")
+def nass_rel():
+    with (DATA / "nass_releases.csv").open(newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def _val(store, series, ref, d):
+    rows = [r for r in store if r["series"] == series and r["reference_period"] == ref and r["release_date"] == d
+            and r["revision_flag"] != "v2_repost"]
+    assert len(rows) == 1, (series, ref, d, len(rows))
+    return float(rows[0]["value"]), rows[0]["revision_flag"]
+
+
+# Documented exceptions to WASDE == Crop Production on a joint date: (date, line) -> cause.
+WASDE_CP_EXCEPTIONS: dict = {}  # none since the corrected-only 2008-10-10 file is dated at its documented reissue, 2008-10-28 (PREREG-AMENDMENTS.md)
+
+
+def wasde_cp_same_day(store):
+    """Every date (Aug-Nov, 1995-2026) with both a WASDE and a Crop Production corn release: WASDE US corn yield ==
+    Crop Production national yield; production within rounding (WASDE prints integer million bu, CP 1,000 bu)."""
+    n, bad, dates = 0, [], sorted({r["release_date"] for r in store if r["series"] == "crop_production.us_corn.yield"})
+    for d in dates:
+        ref = f"{d[:4]}/{str(int(d[:4]) + 1)[2:]}"
+        wy, _ = _val(store, "wasde.us_corn.yield", ref, d)
+        wp, _ = _val(store, "wasde.us_corn.production", ref, d)
+        cy, _ = _val(store, "crop_production.us_corn.yield", ref, d)
+        cp, _ = _val(store, "crop_production.us_corn.production_kbu", ref, d)
+        n += 2
+        if wy != cy:
+            bad.append((d, "yield", wy, cy))
+        if abs(wp - cp / 1000) > 0.5 + 1e-9:
+            bad.append((d, "production", wp, cp / 1000))
+    return n, dates, bad
+
+
+def test_wasde_equals_crop_production_same_day(store):
+    n, dates, bad = wasde_cp_same_day(store)
+    print(f"WASDE vs Crop Production: {len(dates)} joint dates, {n} line comparisons, {len(bad)} exceptions")
+    for b in bad:
+        print("   exception:", b, "->", WASDE_CP_EXCEPTIONS.get(b[:2]))
+    assert len(dates) == 125  # (2008-10-28 replaces 2008-10-10) Aug 32 + Sep 32 + Oct 30 + Nov 31 (no Oct 2013, Oct 2025 reports)
+    assert {d[5:7] for d in dates} == {"08", "09", "10", "11"}
+    assert {b[:2] for b in bad} == set(WASDE_CP_EXCEPTIONS), bad
+
+
+def test_wasde_cp_check_is_armed(store):
+    bumped = [{**r, "value": repr(float(r["value"]) + 0.1)} if (r["series"] == "crop_production.us_corn.yield" and r["release_date"] == "2015-08-12") else r
+              for r in store]
+    _, _, bad = wasde_cp_same_day(bumped)
+    assert ("2015-08-12", "yield") in {b[:2] for b in bad}
+
+
+def test_crop_production_2008_10_10_is_the_oct_28_vintage(store, releases):
+    """The 2008-10-10 Crop Production exists only as `_revision` (corrected Oct 28 numbers): flagged corrected-only, stamped at
+    its documented reissue date 2008-10-28, and equal to the WASDE reissue of that day, not to the Oct 10 WASDE."""
+    cy, fl = _val(store, "crop_production.us_corn.yield", "2008/09", "2008-10-28")
+    cp, _ = _val(store, "crop_production.us_corn.production_kbu", "2008/09", "2008-10-28")
+    assert fl == "v1_corrected_only"
+    assert not [r for r in store if r["series"].startswith("crop_production.") and r["release_date"] == "2008-10-10"]
+    assert _val(store, "wasde.us_corn.yield", "2008/09", "2008-10-28")[0] == cy == 153.9
+    assert round(cp / 1000) == _val(store, "wasde.us_corn.production", "2008/09", "2008-10-28")[0] == 12033
+    assert _val(store, "wasde.us_corn.yield", "2008/09", "2008-10-10")[0] == 154.0
+
+
+def test_annual_summary_equals_january_wasde(store):
+    """Annual Summary (each January; 8 Feb 2019) national corn yield/production == the same day's WASDE first-final line,
+    and the Summary's release date is a WASDE release date (the first-final truth of STRATEGY 5.1)."""
+    summ = sorted({r["release_date"] for r in store if r["series"] == "crop_production_summary.us_corn.yield"})
+    assert len(summ) == 32 and summ[0] == "1995-01-12" and summ[-1] == "2026-01-12" and "2015-02-05" in summ and "2015-01-12" not in summ
+    wasde_dates = {r["release_date"] for r in store if r["series"] == "wasde.us_corn.yield"}
+    bad = []
+    for d in summ:
+        # the 2015 Summary exists in ESMIS only as `_revision`, stamped at its printed reissue (2015-02-05); the January WASDE
+        # it must equal is the one of the archived date 2015-01-12 (forage corrections; corn untouched)
+        w = "2015-01-12" if d == "2015-02-05" else d
+        assert w in wasde_dates, f"Annual Summary date {d} is not a WASDE date"
+        ref = f"{int(d[:4]) - 1}/{d[2:4]}"
+        sy, _ = _val(store, "crop_production_summary.us_corn.yield", ref, d)
+        sp, _ = _val(store, "crop_production_summary.us_corn.production_kbu", ref, d)
+        wy, _ = _val(store, "wasde.us_corn.yield", ref, w)
+        wp, _ = _val(store, "wasde.us_corn.production", ref, w)
+        if sy != wy or abs(sp / 1000 - wp) > 0.5 + 1e-9:
+            bad.append((d, sy, wy, sp / 1000, wp))
+    print(f"Annual Summary vs January WASDE: {len(summ)} years, {len(bad)} mismatches {bad}")
+    assert not bad, bad
+
+
+def test_crop_production_reliability_rows(store):
+    """The values F5 needs: printed RMSE (percent of production), 90% interval and the below/above counts (RESULTS item 3)."""
+    def rel(d, k):
+        return _val(store, f"crop_production.us_corn.rel_{k}", f"{d[:4]}/{str(int(d[:4]) + 1)[2:]}", d)[0]
+    assert (rel("2015-08-12", "rmse_pct"), rel("2015-08-12", "ci90_pct"), rel("2015-08-12", "n_below"), rel("2015-08-12", "n_above")) == (4.3, 7.5, 10, 10)
+    assert (rel("2025-08-12", "rmse_pct"), rel("2025-08-12", "ci90_pct"), rel("2025-08-12", "n_below"), rel("2025-08-12", "n_above")) == (3.8, 6.5, 7, 13)
+    dates = sorted({r["release_date"] for r in store if r["series"] == "crop_production.us_corn.rel_rmse_pct"})
+    assert len(dates) == 125 and {d[5:7] for d in dates} == {"08", "09", "10", "11"}
+    for d in dates:  # window = 20 years (10 in the 1995-98 reports) minus the years without a forecast that month
+        n = rel(d, "n_below") + rel(d, "n_above")
+        assert 9 <= n <= 20, d
+        if d[5:7] == "10" and "2014" <= d[:4] <= "2024":
+            assert n == 19, d  # no October 2013 forecast (shutdown) inside the window
+    assert rel("2026-10-09", "n_below") + rel("2026-10-09", "n_above") == 18  # no Oct 2013 and no Oct 2025 forecast
+
+
+# ---- Crop Progress -------------------------------------------------------------------------------------------------
+
+EXPECTED_NASS_COUNTS = {("crop_production", "v1"): 375, ("crop_production", "v1_corrected_only"): 4,
+                        ("crop_production_summary", "v1"): 31, ("crop_production_summary", "v1_corrected_only"): 1,
+                        ("crop_progress", "v1"): 1103, ("crop_progress", "v1_corrected_only"): 4}
+# printed 'Released' dates on a Wednesday: 2012-10-31 (the Oct 29 report delayed by the Sandy closures), 2017-07-05 (July 4 week)
+EXPECTED_CP_OFF_DAYS = [("2012-10-31", "Wed"), ("2017-07-05", "Wed")]
+
+
+def _cp_files(nass_rel):
+    return [r for r in nass_rel if r["series_root"] == "crop_progress"]
+
+
+def test_crop_progress_week_ending_and_prev_week(store, nass_rel):
+    """reference_period = the printed week-ending Sunday; this week's 'previous week' line equals last week's published line."""
+    cp = [r for r in store if r["series"] == "crop_progress.us_corn.good_excellent"]
+    byweek = {r["reference_period"]: float(r["value"]) for r in cp}
+    assert len(byweek) == len(cp)
+    n, diffs = 0, []
+    for r in cp:
+        text = (ROOT / r["source_file"]).read_bytes().decode("latin-1")
+        p = parse_progress(text)
+        assert p["good_excellent"] == float(r["value"])
+        we = date.fromisoformat(r["reference_period"])
+        assert we.weekday() == 6 and 0 < (date.fromisoformat(r["release_date"]) - we).days <= 3, r
+        if p["week_ending"] is not None:
+            assert p["week_ending"] == we
+        pw = (we - timedelta(days=7)).isoformat()
+        if p["prev_good_excellent"] is not None and pw in byweek:
+            n += 1
+            if byweek[pw] != p["prev_good_excellent"]:
+                diffs.append((r["release_date"], pw, byweek[pw], p["prev_good_excellent"]))
+    print(f"Crop Progress: {len(cp)} corn G/E rows, {n} previous-week comparisons, {len(diffs)} differences {diffs}")
+    assert n > 600 and not diffs
+
+
+def test_crop_progress_seasons(store):
+    cp = [r for r in store if r["series"] == "crop_progress.us_corn.good_excellent"]
+    per_year = collections.Counter(r["reference_period"][:4] for r in cp)
+    assert set(per_year) == {str(y) for y in range(1995, 2027)}
+    assert all(14 <= v <= 30 for v in per_year.values()), per_year
+    assert all(0 < float(r["value"]) <= 100 for r in cp)
+    assert all(r["release_ts"].endswith(("-04:00", "-05:00")) and "T16:00:00" in r["release_ts"] for r in cp)
+
+
+def test_crop_progress_corrected_only_and_exceptions(nass_rel):
+    flagged = {r["release_date"] for r in nass_rel if r["series_root"] == "crop_progress" and r["revision_flag"] == "v1_corrected_only"}
+    assert flagged == {"1997-06-24", "2008-07-28", "2015-08-04", "2015-11-24"}
+    flagged = {r["release_date"] for r in nass_rel if r["series_root"] == "crop_production" and r["revision_flag"] == "v1_corrected_only"}
+    assert flagged == {"2003-08-12", "2008-08-12", "2008-10-28", "2010-01-12"}
+    flagged = {r["release_date"] for r in nass_rel if r["series_root"] == "crop_production_summary" and r["revision_flag"] == "v1_corrected_only"}
+    assert flagged == {"2015-02-05"}
+
+
+def test_nass_release_counts(nass_rel):
+    c = collections.Counter((r["series_root"], r["revision_flag"]) for r in nass_rel)
+    print("NASS releases per series and flag:", dict(c))
+    assert dict(c) == EXPECTED_NASS_COUNTS
+    sel = list(csv.DictReader((DATA / "nass_selection.csv").open(newline="")))
+    prim = collections.Counter(r["ident"] for r in sel if r["role"] == "primary")
+    assert prim == {"CropProg": 1107, "CropProd": 379, "CropProdSu": 32}
+    for r in sel:
+        assert r["role"] in ("primary", "excluded")
+
+
+def test_crop_progress_off_days_are_logged(nass_rel):
+    """Crop Progress is released Monday (Tuesday after a Monday holiday); every other weekday is a logged exception."""
+    off = sorted((r["release_date"], date.fromisoformat(r["release_date"]).strftime("%a")) for r in _cp_files(nass_rel)
+                 if date.fromisoformat(r["release_date"]).weekday() not in (0, 1))
+    print("Crop Progress releases not on Mon/Tue:", off)
+    assert off == EXPECTED_CP_OFF_DAYS
+
+
+def test_crop_progress_time_statement_every_era():
+    """SEV3 (d): the 16:00 ET release time is stated in the report text of every year 1995-2026 (all primary files scanned);
+    the only file naming another weekly time for Crop Progress is the 1996-07-29 pre-announcement of 3:00 p.m.; the
+    12:00 p.m. statements of 2002-2010 belong to the Weekly Weather and Crop Bulletin."""
+    with (DATA / "nass_selection.csv").open(newline="") as f:
+        prim = [r for r in csv.DictReader(f) if r["ident"] == "CropProg" and r["role"] == "primary"]
+    rx = re.compile(r"(?:(?:are|will be|be)\s+released|released)\s+(?:at|after)\s+(\d{1,2}(?::\d\d)?\s*(?:p\.?m\.?|a\.?m\.?)|noon)", re.I)
+    years, other = collections.defaultdict(int), []
+    for r in prim:
+        path = next((ROOT / "data/raw/crop_progress").glob(f"{r['listing_date']}/*/{r['fname']}"))
+        text = " ".join(path.read_bytes().decode("latin-1").split())
+        for m in rx.finditer(text):
+            t = re.sub(r"[ .]", "", m.group(1).lower())
+            ctx = text[max(0, m.start() - 90):m.end()]
+            if t in ("4pm", "4:00pm"):
+                years[r["listing_date"][:4]] += 1
+            elif "Bulletin" not in ctx:
+                other.append((r["listing_date"], t))
+    assert set(years) == {str(y) for y in range(1995, 2027)}, sorted(years)
+    assert sorted(other) == [("1996-07-29", "3:00pm"), ("1997-06-24", "9:00am")]  # pre-announcement; the 9:00 a.m. update of a corrected file
+
+
+# ---- the release-time table and the reissue note ---------------------------------------------------------------
+
+def test_release_time_table_notes():
+    with (DATA / "release_times.csv").open(newline="") as f:
+        tab = list(csv.DictReader(f))
+    cp = [r for r in tab if r["series"] == "crop_progress"]
+    assert len(cp) == 1 and cp[0]["local_time"] == "16:00" and cp[0]["valid_to"] == "9999-12-31"
+    assert "4 p.m." in cp[0]["source"] and "2026" in cp[0]["source"] and "2005" in cp[0]["source"] and "UNVERIFIED" not in cp[0]["source"]
+    assert {r["series"] for r in tab} >= {"crop_production_summary"}
+    wasde = next(r for r in tab if r["series"] == "wasde" and r["valid_from"] == "1995-01-01")
+    assert "2008-10-28" in wasde["source"] and "UNVERIFIED" in wasde["source"]
+
+
+def test_reissue_time_is_flagged_unverified_in_the_log():
+    with (DATA / "txt_selection.csv").open(newline="") as f:
+        row = next(r for r in csv.DictReader(f) if r["role"] == "reissue")
+    assert row["listing_date"] == "2008-10-28" and "UNVERIFIED" in row["reason"] and "08:30" in row["reason"]
+
+
+# ---- 20 hand-read PDF spot checks ----------------------------------------------------------------------------------
+
+def spot_rows():
+    with (DATA / "spot_checks.csv").open(newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def test_spot_checks_20_of_20(store):
+    """Each row: a value read by eye from the ESMIS PDF page (see data/spot_checks.csv, pdf sha256 + page) must equal the store."""
+    rows = spot_rows()
+    assert len(rows) == 20
+    roots = collections.Counter(r["series"].split(".")[0] for r in rows)
+    assert roots["wasde"] >= 10 and roots["crop_production"] >= 2 and roots["crop_progress"] >= 1
+    assert sum(r["release_date"] < "2010-07-09" and r["series"].startswith("wasde") for r in rows) >= 5  # TXT era
+    assert sum(r["release_date"] >= "2010-07-09" and r["series"].startswith("wasde") for r in rows) >= 5  # XML era
+    assert any(r["release_date"].startswith("1995") for r in rows) and any(r["release_date"].startswith("2025") for r in rows)
+    bad = []
+    for r in rows:
+        ref = r["marketing_year"]
+        d = r["release_date"]
+        found = [x for x in store if x["series"] == r["series"] and x["reference_period"] == ref and x["release_date"] == d
+                 and x["revision_flag"] != "v2_repost"]
+        assert len(found) == 1, r
+        if float(found[0]["value"]) != float(r["value_read"]):
+            bad.append((d, r["series"], ref, found[0]["value"], r["value_read"]))
+        assert re.fullmatch(r"[0-9a-f]{64}", r["pdf_sha256"]) and r["pdf_url"].endswith(".pdf") and int(r["page"]) >= 1
+    print(f"spot checks: {len(rows)} read by eye, {len(rows) - len(bad)} match the store")
+    assert not bad, bad
+
+
+def test_spot_check_pdfs_are_the_manifest_files():
+    """The PDFs behind the spot checks are in the fetch manifest with the recorded hash and (when present) on disk unchanged."""
+    from cfstore.fetch import read_manifest
+    man = read_manifest()
+    for r in spot_rows():
+        m = man[r["pdf_url"]]
+        assert m["sha256"] == r["pdf_sha256"]
+        path = ROOT / m["local_path"]
+        if path.exists():
+            assert hashlib.sha256(path.read_bytes()).hexdigest() == r["pdf_sha256"]
+
+
+# ---- parsers fail loudly -------------------------------------------------------------------------------------------
+
+def _raw(sub, d):
+    return next((ROOT / "data/raw" / sub).glob(f"{d}/*/*.txt")).read_bytes().decode("latin-1")
+
+
+def test_crop_progress_parser_raises_on_changed_layout():
+    t = _raw("crop_progress", "2026-10-13")
+    assert parse_progress(t)["good_excellent"] == 56.0
+    with pytest.raises(ValueError):
+        parse_progress(t.replace("18 States ......", "18 Stat  ......"))
+    with pytest.raises(ValueError):  # a row that does not sum to ~100
+        parse_progress(t.replace("18 States ......:      5          12          27          44          12",
+                                 "18 States ......:      5          12          27          44          52"))
+
+
+def test_mid_season_report_without_corn_condition_fails_the_build():
+    """A renamed corn condition title would parse to None (April-May reports legitimately have none); mid-season reports
+    (15 Jun - 30 Sep) must carry it, so the ingest raises."""
+    from cfstore.nass import parse_release
+    path = next((ROOT / "data/raw/crop_progress").glob("2025-08-11/*/*.txt"))
+    text = path.read_bytes().decode("latin-1")
+    p = {"release_date": "2025-08-11", "text": text, "fname": path.name}
+    assert len(parse_release("CropProg", p)) == 1
+    with pytest.raises(ValueError):
+        parse_release("CropProg", {**p, "text": text.replace("Corn Condition - Selected States", "Corn Cond. - Selected States")})
+    may = next((ROOT / "data/raw/crop_progress").glob("2025-05-12/*/*.txt"))
+    assert parse_release("CropProg", {"release_date": "2025-05-12", "text": may.read_bytes().decode("latin-1"), "fname": may.name}) == []
+
+
+def test_crop_production_parser_raises_on_changed_layout():
+    t = _raw("crop_production", "2015-08-12")
+    assert parse_corn_table(t)["yield"] == 168.8 and parse_reliability(t, 8)["rmse_pct"] == 4.3
+    with pytest.raises(ValueError):
+        parse_reliability(t.replace("Corn for grain ........bushels:", "Corn grain ............bushels:"), 8)
+    lines = t.splitlines()
+    i = next(k for k, ln in enumerate(lines) if ln.startswith("United States") and "168.8" in ln)
+    lines[i] = lines[i].replace("168.8", "99.9")
+    with pytest.raises(ValueError, match="yield x area"):  # a column mix-up is caught by yield x area == production
+        parse_corn_table("\n".join(lines))

@@ -184,7 +184,7 @@ listing_date,listing_id,fname,role,wasde_no,header_date,release_date,revision_fl
 2008-09-12,95684,wasde-09-12-2008.txt,primary,462,2008-09-12,2008-09-12,v1,cover date == ESMIS date
 2008-10-10,95683,wasde-10-10-2008.txt,primary,463,2008-10-10,2008-10-10,v1,cover date == ESMIS date
 2008-10-10,95683,wasde-10-10-2008_SpecialReport.txt,excluded,,,,,not a report file name (cotton/news/readme/announcement/special)
-2008-10-28,95682,wasde-10-28-2008.txt,reissue,463,2008-10-28,2008-10-28,v1_reissue,"later file of WASDE-463 (primary wasde-10-10-2008.txt); corn values differ: a reissue, its own store release, never an origin"
+2008-10-28,95682,wasde-10-28-2008.txt,reissue,463,2008-10-28,2008-10-28,v1_reissue,"later file of WASDE-463 (primary wasde-10-10-2008.txt); corn values differ: a reissue, its own store release, never an origin; release time 08:30 ET is the release_times.csv table default, UNVERIFIED for this reissue"
 2008-11-10,95681,wasde-11-10-2008.txt,primary,464,2008-11-10,2008-11-10,v1,cover date == ESMIS date
 2008-12-11,95680,wasde-12-11-2008.txt,primary,465,2008-12-11,2008-12-11,v1,cover date == ESMIS date
 2008-12-12,95679,wasde-12-12-2008.txt,repost,465,2008-12-11,2008-12-12,v2_repost,later file of WASDE-465 (primary wasde-12-11-2008.txt); identical corn values: sensitivity-only repost
