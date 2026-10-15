@@ -1,3 +1,4 @@
+import pytest
 from fractions import Fraction
 from math import floor
 
@@ -22,3 +23,9 @@ def test_scored_thresholds():
     assert band_scored(9, Fraction(4, 5)) and band_scored(9, Fraction(1, 2))
     assert not band_scored(8, Fraction(4, 5))
     assert not band_scored(18, Fraction(9, 10)) and band_scored(19, Fraction(9, 10))
+
+
+def test_float_level_rejected():
+    with pytest.raises(TypeError):
+        band_ranks(9, 0.8)
+    assert band_ranks(9, "4/5") == band_ranks(9, Fraction(4, 5)) == (1, 9)

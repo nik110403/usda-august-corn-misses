@@ -9,6 +9,8 @@ def band_ranks(n: int, level: Fraction | str) -> tuple[int, int]:
     k_lo = floor((n+1)*alpha/2), k_hi = ceil((n+1)*(1-alpha/2)), alpha = 1 - level.
     The band is scored only if 1 <= k_lo and k_hi <= n.
     """
+    if not isinstance(level, (Fraction, str, int)):
+        raise TypeError(f"level must be Fraction/str/int, not {type(level).__name__} (floats are inexact)")
     alpha = 1 - Fraction(level)
     return floor((n + 1) * alpha / 2), ceil((n + 1) * (1 - alpha / 2))
 

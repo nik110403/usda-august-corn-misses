@@ -14,7 +14,7 @@ from .fetch import DATA, fetch
 
 API = "https://esmis.nal.usda.gov/api/v1/release/findByIdentifier/wasde?page={}"
 LISTING_CSV = DATA / "listing.csv"
-CORR_RE = re.compile(r"(_revision|_revisions|_correction|^R1|[_-]R1[._]|reissu)", re.I)
+CORR_RE = re.compile(r"(_revision|_revisions|_correction|^R1|[_-]R1[._]|reissu|v\d+\.[a-z]+$)", re.I)
 FIELDS = ["release_date", "listing_id", "n_rows_for_date", "is_dup_row", "url", "ext",
           "fname", "is_orig", "is_correction", "esmis_release_datetime"]
 

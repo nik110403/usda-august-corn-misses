@@ -4,6 +4,8 @@ Rows are dicts with at least: series, release_date (ISO date), release_ts (tz-aw
 """
 from datetime import date, datetime
 
+from .times import release_ts
+
 ORIGIN_MONTHS = range(5, 12)  # May-Nov
 
 
@@ -33,20 +35,23 @@ def origins(release_rows: list[dict]) -> list[dict]:
 
 
 def is_own_release(row: dict, origin: dict) -> bool:
-    """The origin's own WASDE, and the Crop Production released jointly with it (same ESMIS date)."""
-    return (row["release_date"] == origin["release_date"]
-            and row["series"].split(".")[0] in ("wasde", "crop_production"))
+    """The origin's own WASDE (its first-release file only, never a logged v2 re-post), and the
+    Crop Production released jointly with it (same ESMIS date)."""
+    root = row["series"].split(".")[0]
+    if row["release_date"] != origin["release_date"]:
+        return False
+    if root == "wasde":
+        return row.get("source_file") == origin.get("file") and row.get("revision_flag") != "v2_repost"
+    return root == "crop_production"
 
 
 def info_set(rows: list[dict], origin: dict) -> list[dict]:
-    """Strict rule: release_ts < origin_ts, plus the origin's own release.
-
-    A same-day row of another series therefore enters only when its documented time is
-    earlier than the origin's; otherwise it is lagged to the next day (it appears in the
-    information set of origins on later days).
-    """
+    """PREREG 1: a row that is not the origin's own release is admitted only if its ESMIS date is
+    strictly earlier than the origin's date AND release_ts < origin_ts. Any other series released on the
+    origin's date counts as released the next day. Logged v2 re-posts are sensitivity-only: excluded."""
     o_ts = ts(origin)
-    return [r for r in rows if ts(r) < o_ts or is_own_release(r, origin)]
+    return [r for r in rows if r.get("revision_flag") != "v2_repost"
+            and (is_own_release(r, origin) or (r["release_date"] < origin["release_date"] and ts(r) < o_ts))]
 
 
 def date_level_select(rows: list[dict], origin: dict) -> list[dict]:
@@ -55,11 +60,23 @@ def date_level_select(rows: list[dict], origin: dict) -> list[dict]:
 
 
 def assert_no_leak(features: list[dict], origin: dict) -> None:
-    """Leakage test 1: fail if any feature row has release_ts >= origin_ts and is not the origin's own release."""
+    """Leakage test 1, independent of the selector. Fails if any feature row (a) carries a release_ts that
+    differs from the release-time table for its series and ESMIS date, (b) is a v2 re-post, or (c) is not the
+    origin's own release and is dated on/after the origin date or has release_ts >= origin_ts."""
     o_ts = ts(origin)
-    bad = [r for r in features if ts(r) >= o_ts and not is_own_release(r, origin)]
-    if bad:
-        raise LeakageError(f"{len(bad)} feature row(s) not strictly before origin_ts {o_ts.isoformat()}: {bad[0]}")
+    for r in features:
+        try:
+            expect, _ = release_ts(r["series"].split(".")[0], date.fromisoformat(r["release_date"]))
+        except LookupError as e:
+            raise LeakageError(f"no release time for row {r}: {e}") from e
+        if ts(r) != expect:
+            raise LeakageError(f"release_ts {r['release_ts']} != table time {expect.isoformat()}: {r}")
+        if r.get("revision_flag") == "v2_repost":
+            raise LeakageError(f"v2 re-post in primary feature set: {r}")
+        if is_own_release(r, origin):
+            continue
+        if r["release_date"] >= origin["release_date"] or ts(r) >= o_ts:
+            raise LeakageError(f"non-own row not strictly before origin ({o_ts.isoformat()}): {r}")
 
 
 def build_features(rows: list[dict], origin: dict, select=info_set) -> list[dict]:

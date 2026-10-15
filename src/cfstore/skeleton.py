@@ -12,14 +12,14 @@ def truth_rows(store: list[dict], season: int) -> dict | None:
     """First-final: yield for crop `season` in the first WASDE of calendar year season+1 that carries it."""
     ref = f"{season}/{str(season + 1)[2:]}"
     c = [r for r in store if r["series"] == "wasde.us_corn.yield" and r["reference_period"] == ref
-         and r["release_date"].startswith(str(season + 1))]
+         and r["release_date"].startswith(str(season + 1)) and r["revision_flag"] != "v2_repost"]
     return min(c, key=lambda r: r["release_date"]) if c else None
 
 
 def usda_yield(rows: list[dict], origin: dict, season: int) -> Fraction:
     ref = f"{season}/{str(season + 1)[2:]}"
     c = [r for r in rows if r["series"] == "wasde.us_corn.yield" and r["reference_period"] == ref
-         and r["release_date"] == origin["release_date"]]
+         and r["release_date"] == origin["release_date"] and r["revision_flag"] != "v2_repost"]
     assert len(c) == 1, (season, origin["release_date"], len(c))
     return Fraction(c[0]["value"])
 
@@ -31,8 +31,6 @@ def august_errors(store: list[dict], releases: list[dict], season_to: int) -> li
     visible = info_set(store, o_now)
     errs = []
     for s in sorted(aug):
-        if s >= season_to:
-            continue
         t = truth_rows(visible, s)
         if t is None:
             continue

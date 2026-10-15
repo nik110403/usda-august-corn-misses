@@ -53,3 +53,41 @@ def parse_corn(xml_bytes: bytes) -> list[dict]:
     if seen != set(LABELS.values()):
         raise ValueError(f"missing corn lines: {set(LABELS.values()) - seen}")
     return out
+
+
+def parse_corn_xls(path: str) -> list[dict]:
+    """ORIG .xls (2013-era layout): sheet with a 'CORN' header cell followed by market-year cells.
+
+    The last column of a market year is the current month; checked against the sheet's month label.
+    """
+    import xlrd
+    book = xlrd.open_workbook(path)
+    for sh in book.sheets():
+        for hdr in range(sh.nrows):
+            for lc in range(sh.ncols):
+                if str(sh.cell_value(hdr, lc)).strip() == "CORN" and lc + 1 < sh.ncols \
+                        and re.match(r"^\d{4}/\d{2}", str(sh.cell_value(hdr, lc + 1))):
+                    return _xls_table(sh, hdr, lc)
+    raise ValueError("no CORN table in xls")
+
+
+def _xls_table(sh, hdr: int, lc: int) -> list[dict]:
+    last_col = {str(v).split()[0]: c for c, v in enumerate(sh.row_values(hdr))
+                if c > lc and re.match(r"^\d{4}/\d{2}", str(v))}  # later column of a year overwrites earlier
+    rep_month = " ".join(str(v) for v in sh.row_values(1) if v != "").strip().lower()  # e.g. "july 2013"
+    cur = [str(v).strip() for v in sh.row_values(hdr + 1) if str(v).strip()][-1]
+    if not rep_month.startswith(cur[:3].lower()):
+        raise ValueError(f"column order: last month {cur!r} != report month {rep_month!r}")
+    out, seen = [], set()
+    for r in range(hdr + 2, sh.nrows):
+        key = LABELS.get(" ".join(str(sh.cell_value(r, lc)).lower().split()))
+        if key is None or key in seen:
+            continue
+        seen.add(key)
+        for ref, c in last_col.items():
+            v = _num(str(sh.cell_value(r, c)))
+            if v is not None:
+                out.append({"series": f"wasde.us_corn.{key}", "reference_period": ref, "value": v})
+    if seen != set(LABELS.values()):
+        raise ValueError(f"missing corn lines: {set(LABELS.values()) - seen}")
+    return out

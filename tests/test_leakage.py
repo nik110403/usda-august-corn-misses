@@ -49,21 +49,74 @@ def test1_assertion_fires_on_later_row(store, releases):
         assert_no_leak(later, o)
 
 
-def test2_planted_leak(store, releases):
-    # a real Monday WASDE origin from the store (2025-05-12, noon ET)
-    mondays = [o for o in origins(releases) if date.fromisoformat(o["release_date"]).weekday() == 0]
-    o = next(o for o in mondays if o["release_date"] == "2025-05-12")
-    assert ts(o).hour == 12
+def _row(series: str, d: str, t: datetime) -> dict:
+    return {**_cp_row(d, 0, 0), "series": series, "release_ts": t.isoformat()}
+
+
+def _origin(releases, d="2025-05-12"):
+    o = next(o for o in origins(releases) if o["release_date"] == d)
+    assert date.fromisoformat(d).weekday() == 0 and ts(o).hour == 12  # real Monday WASDE origin, noon ET
+    return o
+
+
+def test2_guard_is_armed_careless_selector(store, releases):
+    """Mutation test: a careless date-level join lets the 16:00 same-day row through; the guard must fail the build."""
+    o = _origin(releases)
     leak = _cp_row(o["release_date"], 16, 0)
     assert leak["release_ts"] == release_ts("crop_progress", date.fromisoformat(o["release_date"]))[0].isoformat()
-    ok = _cp_row("2025-05-11", 15, 59)  # previous day, 15:59 ET
-    # careless date-level join: the 16:00 same-day row gets through selection, the guard must fail the build
     with pytest.raises(LeakageError):
         build_features(store + [leak], o, select=date_level_select)
-    # the 15:59 previous-day row is admitted
-    feats = build_features(store + [ok], o, select=date_level_select)
-    assert ok in feats
-    # the strict information set excludes the 16:00 row and admits the 15:59 row
-    strict = info_set(store + [leak, ok], o)
-    assert leak not in strict and ok in strict
-    assert build_features(store + [leak, ok], o) == strict
+
+
+def test2_same_day_rows_excluded_by_strict_build(store, releases):
+    o = _origin(releases)
+    d = o["release_date"]
+    leak16 = _cp_row(d, 16, 0)
+    placeholder = _row("crop_progress.us_corn.good_excellent", d, datetime(2025, 5, 12, 12, 0, tzinfo=ZoneInfo("UTC")))
+    assert placeholder["release_ts"].startswith("2025-05-12T12:00:00+00:00")  # = 08:00 ET, before origin_ts
+    gs = _row("grain_stocks.us_corn.stocks", d, datetime(2025, 5, 12, 11, 59, tzinfo=ZoneInfo("America/New_York")))
+    base = build_features(store, o)
+    for row in (leak16, placeholder, gs):
+        assert row not in info_set(store + [row], o)  # excluded by the selector (same-day rule)
+        assert build_features(store + [row], o) == base  # strict build: excluded, no failure
+        with pytest.raises(LeakageError):  # forced into the feature set, the guard raises
+            assert_no_leak(base + [row], o)
+        with pytest.raises(LeakageError):
+            build_features(store + [row], o, select=date_level_select)
+
+
+def test2_previous_day_rows(store, releases):
+    o = _origin(releases)
+    ok159 = _cp_row("2025-05-11", 15, 59)
+    ok1600 = _cp_row("2025-05-11", 16, 0)  # table-consistent previous-day row
+    assert ok159 in info_set(store + [ok159], o)  # selector admits the 15:59 previous-day row
+    with pytest.raises(LeakageError):  # ...but its stamp disagrees with the release-time table, so the guard rejects it
+        assert_no_leak([ok159], o)
+    feats = build_features(store + [ok1600], o)
+    assert ok1600 in feats
+
+
+def test_own_release_matches_first_release_file(store, releases):
+    o = _origin(releases)
+    own = [r for r in store if r["release_date"] == o["release_date"]]
+    assert own and all(r["source_file"] == o["file"] for r in own)
+    repost = {**own[0], "source_file": "data/raw/other_v2.xml", "revision_flag": "v2_repost"}
+    assert repost not in info_set(store + [repost], o)
+    other = {**own[0], "source_file": "data/raw/other.xml"}
+    assert other not in info_set(store + [other], o)
+    with pytest.raises(LeakageError):
+        assert_no_leak([repost], o)
+
+
+def test_v2_only_dates_flagged_and_2013_07_11_primary_is_orig_xls(store, releases):
+    flagged = {r["release_date"] for r in releases if r["revision_flag"] == "v1_corrected_only"}
+    assert flagged == {"2024-12-10", "2025-04-10", "2025-05-12", "2026-05-12", "2026-06-11"}
+    jul = [r for r in store if r["release_date"] == "2013-07-11"]
+    prim = [r for r in jul if r["revision_flag"] == "v1"]
+    rep = [r for r in jul if r["revision_flag"] == "v2_repost"]
+    assert prim and rep and len(prim) == len(rep) == 21
+    assert all(r["source_file"].endswith("ORIGwasde-07-11-2013.xls") for r in prim)
+    o = next(o for o in origins(releases) if o["release_date"] == "2013-08-12")
+    feats = build_features(store, o)
+    assert not any(r["revision_flag"] == "v2_repost" for r in feats)
+    assert any(r["release_date"] == "2013-07-11" for r in feats)

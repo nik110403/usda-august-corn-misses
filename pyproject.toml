@@ -3,7 +3,9 @@ name = "cfstore"
 version = "0.1.0"
 description = "As-of store and leakage tests for the US corn yield calibration audit"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "xlrd>=2.0.2",
+]
 
 [dependency-groups]
 dev = ["pytest>=8"]
