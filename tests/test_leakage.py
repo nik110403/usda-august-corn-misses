@@ -1,5 +1,6 @@
-"""Leakage tests 1 and 2 (STRATEGY section 7). Needs data/store.csv: run `make store` first."""
+"""Leakage tests 1-4 (STRATEGY section 7). Needs data/store.csv and out/: run `make store` first."""
 import csv
+from fractions import Fraction
 from datetime import date, datetime, time
 from zoneinfo import ZoneInfo
 
@@ -8,7 +9,10 @@ import pytest
 from cfstore.asof import LeakageError, assert_no_leak, build_features, date_level_select, info_set, is_own_release, origins, ts
 from cfstore.fetch import DATA
 from cfstore.store import read_store
+from cfstore.overlap import OUT, crop_progress_dates, overlap_rows, summary
+from cfstore.skeleton import truth_rows
 from cfstore.times import release_ts
+from cfstore.trend import assert_finals_before, finals_before, first_finals, fit_trend, trend_at
 
 
 @pytest.fixture(scope="module")
@@ -49,9 +53,11 @@ def test1_origin_sweep_covers_txt_era(store, releases):
     assert {o["release_date"][:4] for o in txt} == {str(y) for y in range(1995, 2011)}
     for o in txt:  # every TXT-era origin passes the guard, sees only its own file and strictly earlier rows
         feats = build_features(store, o)
-        own = [r for r in feats if r["release_date"] == o["release_date"]]
+        own = [r for r in feats if r["release_date"] == o["release_date"] and r["series"].startswith("wasde.")]
+        joint = [r for r in feats if r["release_date"] == o["release_date"] and not r["series"].startswith("wasde.")]
         assert own and all(r["source_file"] == o["file"] for r in own)
-        assert all(r["release_date"] < o["release_date"] for r in feats if r not in own)
+        assert all(r["series"].startswith("crop_production.") and r["revision_flag"] != "v1_corrected_only" for r in joint)  # joint CP only
+        assert all(r["release_date"] < o["release_date"] for r in feats if r not in own and r not in joint)
 
 
 def test1_assertion_fires_on_later_row(store, releases):
@@ -110,7 +116,7 @@ def test2_previous_day_rows(store, releases):
 
 def test_own_release_matches_first_release_file(store, releases):
     o = _origin(releases)
-    own = [r for r in store if r["release_date"] == o["release_date"]]
+    own = [r for r in store if r["release_date"] == o["release_date"] and r["series"].startswith("wasde.")]
     assert own and all(r["source_file"] == o["file"] for r in own)
     repost = {**own[0], "source_file": "data/raw/other_v2.xml", "revision_flag": "v2_repost"}
     assert repost not in info_set(store + [repost], o)
@@ -145,3 +151,150 @@ def test_guard_exemption_requires_same_ts_mutation(store, releases):
     assert is_own_release(own, o_early)  # the selector's helper still exempts it (unchanged)
     with pytest.raises(LeakageError):  # same date, own file, table-consistent ts, but ts != origin ts
         assert_no_leak([own], o_early)
+
+
+# ---- N1: origins() chooses by revision_flag, never by date order -------------------------------------------------
+
+def _rel(d: str, flag: str) -> dict:
+    t = datetime.combine(date.fromisoformat(d), time(8, 30), tzinfo=ZoneInfo("America/New_York"))
+    return {"release_date": d, "release_ts": t.isoformat(), "file": f"synthetic/{d}.txt", "revision_flag": flag, "n_values": "27"}
+
+
+def test_origins_ignore_reissue_and_repost_by_flag():
+    rows = [_rel("2020-05-12", "v1"),
+            _rel("2020-06-19", "v1_reissue"),  # a reissue in a month with no primary: that month has no origin
+            _rel("2020-07-10", "v1_corrected_only"), _rel("2020-07-09", "v1"),  # original dated AFTER... see below
+            _rel("2020-08-05", "v1_reissue"), _rel("2020-08-12", "v1"),  # reissue dated before the primary
+            _rel("2020-09-11", "v2_repost"), _rel("2020-09-14", "v1_corrected_only"),
+            _rel("2020-10-09", "v1_corrected_only"), _rel("2020-10-13", "v1")]  # corrected copy dated before its original
+    got = {o["release_date"][:7]: o for o in origins(rows)}
+    assert "2020-06" not in got
+    assert got["2020-05"]["release_date"] == "2020-05-12"
+    assert got["2020-07"]["revision_flag"] == "v1" and got["2020-07"]["release_date"] == "2020-07-09"
+    assert got["2020-08"]["release_date"] == "2020-08-12"  # not the earlier reissue
+    assert got["2020-09"]["release_date"] == "2020-09-14"  # the repost is never an origin; corrected-only is
+    assert got["2020-10"]["release_date"] == "2020-10-13"  # the original v1 wins over an earlier-dated corrected copy
+    assert all(o["revision_flag"] in ("v1", "v1_corrected_only") for o in got.values())
+    assert list(got) == sorted(got)
+    assert origins(list(reversed(rows))) == origins(rows)  # independent of input order
+    with pytest.raises(ValueError):
+        origins([_rel("2020-05-12", "v3_mystery")])
+
+
+def test_real_origins_all_primary(releases):
+    os_ = origins(releases)
+    assert all(o["revision_flag"] in ("v1", "v1_corrected_only") for o in os_)
+    assert not [o for o in os_ if o["release_date"] == "2008-10-28"]
+
+
+# ---- Crop Production corrected-only vintage is never the origin's joint release ---------------------------------
+
+def test_crop_production_2008_10_10_is_corrected_only_never_an_oct10_vintage(store, releases):
+    o = next(o for o in origins(releases) if o["release_date"] == "2008-10-10")
+    cp = [r for r in store if r["series"].startswith("crop_production.") and r["release_date"] == "2008-10-10"]
+    assert cp and {r["revision_flag"] for r in cp} == {"v1_corrected_only"}
+    assert all("_revision" in r["source_file"] for r in cp)
+    vals = {r["series"].split(".")[-1]: float(r["value"]) for r in cp}
+    assert vals["yield"] == 153.9 and round(vals["production_kbu"] / 1000) == 12033  # the Oct 28 numbers ...
+    assert vals["yield"] != 154.0 and round(vals["production_kbu"] / 1000) != 12200  # ... not the Oct 10 vintage (154.0, 12,200)
+    assert not any(r in info_set(store, o) for r in cp)  # the joint-release exemption does not cover it
+    assert not any(r in build_features(store, o) for r in cp)
+    with pytest.raises(LeakageError):
+        assert_no_leak(cp, o)
+    with pytest.raises(LeakageError):
+        build_features(store, o, select=date_level_select)
+    # a regular joint Crop Production release IS the origin's own information
+    o25 = next(o for o in origins(releases) if o["release_date"] == "2025-08-12")
+    cp25 = [r for r in store if r["series"].startswith("crop_production.") and r["release_date"] == "2025-08-12"]
+    assert cp25 and {r["revision_flag"] for r in cp25} == {"v1"}
+    assert all(r in info_set(store, o25) for r in cp25)
+    assert_no_leak(cp25, o25)
+    # later origins see it (Nov 2008 sees the corrected vintage; it was visible since Oct 28 anyway)
+    nov = next(o for o in origins(releases) if o["release_date"] == "2008-11-10")
+    assert all(r in info_set(store, nov) for r in cp)
+
+
+# ---- Leakage test 3: the trend is fitted only on finals released before the origin --------------------------------
+
+def test3_trend_sweep_every_origin(store, releases):
+    n_checked = 0
+    for o in origins(releases):
+        y = int(o["release_date"][:4])
+        finals = finals_before(store, o)
+        if len(finals) < 2:
+            continue  # the first origins (1995) have a single final
+        tr = trend_at(store, o)  # asserts the guard internally
+        assert all(ts(row) < ts(o) for _, _, row in finals)
+        assert max(tr.seasons) == y - 1 and tr.n == y - 1 - 1994 + 1  # every season 1994..y-1 and nothing newer
+        assert all(row["release_date"][:4] == str(s + 1) and row["release_date"][5:7] in ("01", "02") for s, _, row in finals)
+        own = truth_rows(store, y)  # the origin's own season: its first-final is released the next January
+        if own is None:
+            continue  # 2026 origins: the season is not final yet
+        assert ts(own) > ts(o)
+        leaky = finals + [(y, Fraction(own["value"]), own)]
+        with pytest.raises(LeakageError):
+            assert_finals_before(leaky, o)  # the guard is active
+        tr2 = fit_trend(leaky)
+        assert (tr2.intercept, tr2.slope) != (tr.intercept, tr.slope) and tr2.predict(y) != tr.predict(y)
+        n_checked += 1
+    assert n_checked >= 200  # 1996-2025 x 7 origins less the shutdown months
+
+
+def test3_careless_selector_mutation(store, releases):
+    """Mutation: a selector that takes every final in the store (the careless join) makes the guard fail and moves the fit."""
+    o = next(o for o in origins(releases) if o["release_date"] == "2010-08-12")
+    careless = first_finals(store)
+    assert len(careless) > len(finals_before(store, o))
+    with pytest.raises(LeakageError):
+        assert_finals_before(careless, o)
+    assert fit_trend(careless).predict(2010) != trend_at(store, o).predict(2010)
+
+
+def test3_trend_is_exact_ols_and_needs_two_points():
+    pts = [(2000, Fraction(100), {}), (2001, Fraction(104), {}), (2002, Fraction(105), {})]
+    t = fit_trend(pts)
+    assert t.slope == Fraction(5, 2)
+    assert t.predict(2001) == 103 and t.predict(2003) == 108  # passes through the means (2001, 103)
+    with pytest.raises(ValueError):
+        fit_trend(pts[:1])
+
+
+# ---- Leakage test 4: origins on a Crop Progress release day -------------------------------------------------------
+
+def test4_overlap_count_matches_recomputation(releases):
+    with (OUT / "crop_progress_overlap.csv").open(newline="") as f:
+        written = list(csv.DictReader(f))
+    # independent recomputation from the NASS selection log (primary Crop Progress files) and the WASDE release log
+    with (DATA / "nass_selection.csv").open(newline="") as f:
+        cp = {r["release_date"] for r in csv.DictReader(f) if r["ident"] == "CropProg" and r["role"] == "primary"}
+    assert cp == crop_progress_dates()
+    mine = [(o["release_date"], o["release_date"] in cp) for o in origins(releases)]
+    assert [(r["origin_date"], bool(int(r["on_crop_progress_day"]))) for r in written] == mine
+    s = summary(overlap_rows())
+    txt = (OUT / "crop_progress_overlap_count.txt").read_text()
+    for label, v in s.items():
+        assert f"{label}: {v['overlap']} of {v['origins']} May-Nov WASDE origins" in txt
+    assert s["1995-2025"]["overlap"] == sum(hit for d, hit in mine if d < "2026")
+    print("overlap:", s)
+
+
+# 215 regular May-Nov WASDE origins 1995-2025 (7 x 31 less the two shutdown months, Oct 2013 and Oct 2025); 24 of them
+# (20 Mon, 4 Tue) coincide with a Crop Progress release. FEASIBILITY 5b said 29 of 231: it counted ESMIS listing dates, which
+# include 14 non-origin entries (cotton/narrative extracts, the 2008-10-28 reissue, ...) and 5 dates that are not the real
+# release date of a regular WASDE (1995-08-14 = Aug 11 report, 1995-09-11 and 1995-10-10 = extracts, 2008-05-05 = extra
+# listing, the real May WASDE is 2008-05-09, 2009-09-14 = extract; the real one is 2009-09-11). 29 - 5 = 24.
+EXPECTED_OVERLAP = (215, 24)
+
+
+def test4_overlap_vs_feasibility_5b(releases):
+    """RESULTS item 5b counted 29 of 231 (24 Mon, 5 Tue) from ESMIS listing dates; the store counts real origins."""
+    s = summary(overlap_rows())["1995-2025"]
+    assert (s["origins"], s["overlap"]) == EXPECTED_OVERLAP, s
+    assert (s["Mon"], s["Tue"]) == (20, 4)
+    five_b = set("""1995-06-12 1995-08-14 1995-09-11 1995-10-10 1996-08-12 1996-11-12 1997-05-12 1997-11-10 1999-07-12 2002-08-12 2002-11-12
+        2003-05-12 2004-07-12 2004-10-12 2005-09-12 2007-06-11 2008-05-05 2008-11-10 2009-09-14 2011-09-12 2013-08-12 2014-11-10 2016-09-12
+        2019-08-12 2021-07-12 2021-10-12 2022-09-12 2024-08-12 2025-05-12""".split())
+    mine = {r["origin_date"] for r in overlap_rows() if r["on_crop_progress_day"] and r["origin_date"] < "2026"}
+    assert mine < five_b and five_b - mine == {"1995-08-14", "1995-09-11", "1995-10-10", "2008-05-05", "2009-09-14"}
+    origin_dates = {r["origin_date"] for r in overlap_rows()}
+    assert not (five_b - mine) & origin_dates  # none of the five is a regular origin in the store

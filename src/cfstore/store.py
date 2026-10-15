@@ -1,4 +1,5 @@
 """Build the as-of store (data/store.csv) from the listing + manifest-backed raw XML."""
+import collections
 import csv
 import hashlib
 import re
@@ -6,6 +7,7 @@ from datetime import date
 from pathlib import Path
 
 from .fetch import DATA, ROOT, fetch, read_manifest
+from . import nass
 from .listing import build_listing, fetch_listing, first_release_files, write_listing
 from .parse import parse_corn, parse_corn_xls, wasde_number
 from .parse_txt import correction_marker, has_corn_block, parse_corn_txt, parse_header
@@ -147,7 +149,8 @@ def build_store() -> dict:
             "wasde_no": c["no"], "header_date": c["hdr"][1].isoformat(), "release_date": d, "revision_flag": flag,
             "role": "reissue" if flag == "v1_reissue" else "repost",
             "reason": f"later file of WASDE-{c['no']} (primary {c['primary']['fname']}); "
-                      + ("corn values differ: a reissue, its own store release, never an origin"
+                      + ("corn values differ: a reissue, its own store release, never an origin; release time "
+                         f"{ts.strftime('%H:%M')} ET is the release_times.csv table default, UNVERIFIED for this reissue"
                          if flag == "v1_reissue" else "identical corn values: sensitivity-only repost")})
     sel_log.sort(key=lambda r: (r["listing_date"], r["fname"]))
     print("TXT files flagged corrected (marker in file head):")
@@ -187,6 +190,9 @@ def build_store() -> dict:
         src_file = emit(d, ts, src, path, parsed, flag)
         rel.append({"release_date": d, "release_ts": ts.isoformat(), "file": src_file, "revision_flag": flag,
                     "n_values": len(parsed)})
+    nass_store, nass_rel, nass_sel, nass_lst = nass.build_nass()
+    store += nass_store
+    nass.write_logs(nass_rel, nass_sel, nass_lst)
     store.sort(key=lambda r: (r["series"], r["reference_period"], r["release_date"], r["revision_flag"]))
     rel.sort(key=lambda r: r["release_date"])
     with TXT_SELECTION_CSV.open("w", newline="") as fo:
@@ -205,7 +211,9 @@ def build_store() -> dict:
     return {"listing_rows_raw": len(results), "listing_dates": len(all_dates),
             "dup_rows": len(results) - len(all_dates), "txt_releases": len(prim_txt),
             "xml_releases_parsed": sum(r["release_date"] >= XML_FROM for r in rel),
-            "flagged": n_flag, "store_rows": len(store)}
+            "flagged": n_flag, "store_rows": len(store),
+            "nass_releases": dict(collections.Counter((r["series_root"], r["revision_flag"]) for r in nass_rel)),
+            "nass_rows": len(nass_store)}
 
 
 def read_store() -> list[dict]:

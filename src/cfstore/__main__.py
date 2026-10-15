@@ -10,8 +10,11 @@ def main() -> None:
     elif cmd == "skeleton":
         from .skeleton import run
         run()
+    elif cmd == "overlap":
+        from .overlap import write
+        print(write())
     else:
-        sys.exit("usage: python -m cfstore store|skeleton")
+        sys.exit("usage: python -m cfstore store|overlap|skeleton")
 
 
 main()
