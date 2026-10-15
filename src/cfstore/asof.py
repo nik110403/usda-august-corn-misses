@@ -45,6 +45,17 @@ def is_own_release(row: dict, origin: dict) -> bool:
     return root == "crop_production"
 
 
+def _guard_exempt(row: dict, origin: dict) -> bool:
+    """The guard's own, independent own-release exemption (does not call is_own_release): same ESMIS date AND
+    the same release_ts as the origin, plus the first-release-file / joint-Crop-Production rules."""
+    if row["release_date"] != origin["release_date"] or ts(row) != ts(origin):
+        return False
+    root = row["series"].split(".")[0]
+    if root == "wasde":
+        return row.get("source_file") == origin.get("file") and row.get("revision_flag") != "v2_repost"
+    return root == "crop_production"
+
+
 def info_set(rows: list[dict], origin: dict) -> list[dict]:
     """PREREG 1: a row that is not the origin's own release is admitted only if its ESMIS date is
     strictly earlier than the origin's date AND release_ts < origin_ts. Any other series released on the
@@ -73,7 +84,7 @@ def assert_no_leak(features: list[dict], origin: dict) -> None:
             raise LeakageError(f"release_ts {r['release_ts']} != table time {expect.isoformat()}: {r}")
         if r.get("revision_flag") == "v2_repost":
             raise LeakageError(f"v2 re-post in primary feature set: {r}")
-        if is_own_release(r, origin):
+        if _guard_exempt(r, origin):
             continue
         if r["release_date"] >= origin["release_date"] or ts(r) >= o_ts:
             raise LeakageError(f"non-own row not strictly before origin ({o_ts.isoformat()}): {r}")

@@ -8,6 +8,8 @@ LABELS = {  # normalised attribute2 text -> series suffix
     "beginning stocks": "beginning_stocks",
     "production": "production",
     "imports": "imports",
+    "supply, total": "supply_total",  # extra lines for the WASDE identity check (tests/test_validation.py)
+    "exports": "exports",
     "use, total": "total_use",
     "ending stocks": "ending_stocks",
 }
