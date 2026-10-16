@@ -80,16 +80,17 @@ def coverage_rows(cov: list[dict]) -> list[dict]:
 
 
 def compact_rows(rows: list[dict]) -> list[dict]:
-    """Memo coverage table: M1 80% May..Nov, PROD 80% Aug, B1 90% Aug; a pure re-formatting of coverage_rows (never recomputed)."""
+    """Memo coverage table: M1 (yield) 80% May..Nov, PROD (production) 80% Aug; a pure re-formatting of coverage_rows (never recomputed)."""
     idx = {(r["model"], r["horizon"], r["level"]): r for r in rows}
-    want = [("M1", h, "80%") for h in HORIZONS] + [("PROD", "Aug", "80%"), ("B1", "Aug", "90%")]
+    want = [("M1", h, "80%") for h in HORIZONS] + [("PROD", "Aug", "80%")]
+    name = {"M1": "Yield", "PROD": "Production"}
     out = []
     for k in want:
         r = idx[k]
         w = r["wording"] or "descriptive, no wording"
-        out.append({"Model": "M1 (primary)" if r["label"] == "primary" else r["model"], "Horizon": r["horizon"], "Level": r["level"],
+        out.append({"Band": name[r["model"]] + (" (primary)" if r["label"] == "primary" else ""), "Horizon": r["horizon"], "Level": r["level"],
                     "n": r["n"], "x": r["x"], "Coverage": pct(r["coverage"]), "CP90": f"[{pct(r['cp90_lo'])}, {pct(r['cp90_hi'])}]",
-                    "Wording": SHORT_WORDING.get(w, w)})
+                    "Pre-registered verdict": SHORT_WORDING.get(w, w)})
     return out
 
 

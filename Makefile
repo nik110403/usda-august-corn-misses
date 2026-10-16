@@ -1,5 +1,8 @@
 PY = uv run python -I -m cfstore
-.PHONY: store test-leakage test-validation test-baselines test-models test-russia replication skeleton forecasts quickstats preflight evaluate russia-store russia-forecasts russia-preflight russia memo-assets memo
+.PHONY: all store test-leakage test-validation test-baselines test-models test-russia replication skeleton forecasts quickstats preflight evaluate russia-store russia-forecasts russia-preflight russia memo-assets memo
+# clean rebuild (F8): store -> forecasts -> quickstats -> memo; never re-scores (evaluate and russia are one-shot, outputs ship in out/)
+all: store forecasts quickstats memo
+
 # rebuilds data/{listing,store,wasde_releases,txt_selection}.csv (both WASDE eras) and data/nass_{listing,releases,selection}.csv
 # (Crop Progress, Crop Production, Annual Summary) from the manifest-backed raw files, then out/crop_progress_overlap*.
 store:

@@ -4,7 +4,7 @@
 
 ## Question
 
-The desk prices off the August USDA corn yield print. To gauge potential deviation, a band is constructed around this yield, using the 10th and 90th percentiles of USDA's past August misses against the January final. This 80% band is applied to the August yield. The test assesses whether the January final yield falls within this band, based on 22 past seasons from 2004 to 2025.
+How far can USDA's January final corn yield land from its August print? We put an 80% band around the August print, built from USDA's own past August-to-January misses, and scored it on 22 seasons, 2004–2025. It covered 21 of 22; the pre-registered verdict is "too wide".
 
 ## August 2025 answer
 
@@ -14,18 +14,18 @@ On August 12, 2025, the USDA estimated corn yield at 188.8 bu/ac, with our 80% b
 
 ## Stocks-to-use decision line
 
-The decision line for 2025/26 US corn stocks-to-use is 13.3% according to the USDA, while our q10 estimate is 6.1%. This estimate is based on production quantiles passing through the USDA's August balance sheet, with beginning stocks, imports and total use held fixed, so ending stocks move one for one with production. Our calculation shows that the downside yield tail halves stocks-to-use in 2025. This is notable because, as Wright (2011) notes, price becomes steep at low stocks, making the thin tail important. The q50 is 13.4% and the q90 is 20.5%.
+USDA's August balance sheet puts 2025/26 stocks-to-use at 13.3%. Our q10 production, put through that sheet with use held fixed, gives 6.1% (q50 13.4%, q90 20.5%). This is conditional on USDA's use projections and is not scored. Price steepens at low stocks (Wright 2011), so the downside tail is the one that matters.
 
 ## How the band scored, 2004–2025
 
 <!-- include: out/memo/coverage_memo.md -->
 
-The primary pre-registered result shows that 21 out of 22 seasons fell within the August band, resulting in a 95.5% coverage rate. The 90% Clopper-Pearson interval for this coverage rate is 80.2%–99.8%, with the pre-registered wording describing the band as "too wide". The estimator used is conservative by construction, so at the nominal 80% rate it is expected to cover 84.2% of seasons at these sample sizes; that accounts for about 4 points of the excess coverage. A comparison between M3 and M1 in August found no detectable difference, with a one-sided p-value of 0.888. Out of 33 exploratory tests, none had Holm-adjusted p-values below 0.05. Production is scored at 80% coverage, while its 50% coverage and the yield band's 50% coverage are reported descriptively and with exploratory wording, respectively.
+The primary pre-registered result shows that 21 out of 22 seasons fell within the August band, resulting in a 95.5% coverage rate. The 90% Clopper-Pearson interval for this coverage rate is 80.2%–99.8%, with the pre-registered wording describing the band as "too wide". The estimator used is conservative by construction, so at the nominal 80% rate it is expected to cover 84.2% of seasons at these sample sizes; that accounts for about 4 points of the excess coverage. Adding crop condition (Good/Excellent share) made no detectable difference to the August band (one-sided p = 0.888). Out of 33 exploratory tests, none had Holm-adjusted p-values below 0.05.
 
 ## When this fails
 
-The band breaks in two failure modes: drought springs and late surprises. In 2012, a drought year, May, June, and July origins were missed, with final yields beyond the 50% and 80% bands. However, August origins were covered. Late-season surprises also fall outside the bands, as seen in November 2020, which sat outside the 80% band. The stocks-to-use line is flawed, ignoring demand response and breaking in 2011/2012-type years. Eleven WASDE and nine NASS releases survive only as corrected copies, with the originals not archived; they are flagged, and no USDA error is claimed. The band's precision is noted, with a 90% Clopper-Pearson interval spanning 80.2% to 99.8% over 22 seasons. Stress years, such as 2012, 2019, and 2020, have been descriptively scored.
+The band breaks in two failure modes: drought springs and late surprises. In 2012, a drought year, the bands from the May, June and July origins missed the final, which fell beyond both the 50% and 80% bands; the August band covered it. In 2020 the January final fell outside the 80% band from the October and November origins. The stocks-to-use line holds use fixed, so in years like 2011 and 2012 its q10 would need negative stocks and gives no number. Eleven WASDE and nine NASS releases survive only as corrected copies, with the originals not archived; they are flagged, and no USDA error is claimed.
 
 ## Port to other origins
 
-The code is reused as is, with nothing Russia-specific, on Russian wheat production; the line shows the harness runs on a second series and makes no claim about effectiveness. Analyzing 18 seasons, from 2006 to 2023, the August USDA print's distance to the settled figure shows an 80% band covering 18 out of 18 seasons, with a 90% Clopper-Pearson interval of 84.7% to 100% coverage. The verdict on the band is "too wide". The estimator alone expects 84.4% coverage at 18 seasons, so about 4 points of the excess coverage come from it. This exploratory analysis can be applied to other origins, such as EU rapeseed or Brazil safrinha, using a desk's own data.
+The code is reused as is, with nothing Russia-specific, on Russian wheat production. This measures how far USDA revises its own Russia number before settling it in April, about three years after harvest. It does not measure the harvest. The line shows the harness runs on a second series and makes no claim about effectiveness. Analyzing 18 seasons, from 2006 to 2023, the August USDA print's distance to the settled figure shows an 80% band covering 18 out of 18 seasons, with a 90% Clopper-Pearson interval of 84.7% to 100% coverage. The verdict on the band is "too wide". The estimator alone expects 84.4% coverage at 18 seasons, so about 4 points of the excess coverage come from it. This exploratory analysis can be applied to other origins, such as EU rapeseed or Brazil safrinha, where dated vintages exist (MARS, CONAB).

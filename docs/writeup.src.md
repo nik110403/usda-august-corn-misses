@@ -1,16 +1,16 @@
 # How wide is USDA's August corn number?
 
-Every August, the USDA's WASDE and Crop Production reports release the first survey-based US corn yield estimate, prompting grains desks to rapidly rebuild their balance sheets. This initial point estimate provides a direction, but to inform positioning, desks need to understand the potential range of the final January estimate. To assess this, a test was conducted to determine if a band built from the USDA's past August misses could maintain its stated coverage over 22 seasons.
+Every August, the USDA's WASDE and Crop Production reports release the first survey-based US corn yield estimate, prompting grains desks to rapidly rebuild their balance sheets. This initial point estimate provides a direction, but to inform positioning, desks need to understand how far the January final can land from it. To assess this, I test whether a band built from the USDA's past August misses could maintain its stated coverage over 22 seasons.
 
-The results show that an 80% band, constructed over 22 seasons, achieved coverage in 21 of those seasons, exceeding its nominal coverage. The pre-registered verdict is "too wide", and the estimator's own share of the excess coverage is about 4 points. A band built from the USDA's past misses, scored on the seasons 2004 to 2025, covers more than it promises.
+The results show that an 80% band, constructed over 22 seasons, achieved coverage in 21 of those seasons, exceeding its nominal coverage. The pre-registered verdict is "too wide", and the estimator's own share of the excess coverage is about 4 points.
 
 ## Rebuilding what was known on release morning
 
-Backtests that use today's revised numbers carry look-ahead bias, and it flatters their results. To mitigate this risk, our approach relies on publicly available data from the USDA, specifically the WASDE, Crop Production, and Crop Progress reports. Each row of data is timestamped, and a guard is in place to prevent the use of any value released after the forecast origin. Additionally, any series released on the origin date is treated as if it were released the next day, and leakage tests are run before every scored run.
+Backtests that use today's revised numbers carry look-ahead bias, and it flatters their results. Every value is rebuilt from public USDA releases (WASDE, Crop Production, Crop Progress) with its release timestamp. Each row of data is timestamped, and a guard is in place to prevent the use of any value released after the forecast origin. Additionally, any series released on the origin date is treated as if it were released the next day, and leakage tests are run before every scored run.
 
-To ensure the integrity of the data, corrections are handled as separate records. Files that have been corrected are flagged, and re-posted files are logged. A sensitivity run is also conducted, dropping the affected origins to assess the impact of the corrections. The rules for the backtest were established beforehand, including the acceptance rule, wording, sample, and 33 exploratory tests with Holm adjustment. The evaluation is based on a single run, and the rules were frozen before scoring.
+Corrections are handled as separate records. Files that have been corrected are flagged, and re-posted files are logged. A sensitivity run is also conducted, dropping the affected origins to assess the impact of the corrections. The rules for the backtest were established beforehand, including the acceptance rule, wording, sample, and 33 exploratory tests with Holm adjustment.
 
-One disclosure: replicating the NASS reliability table was an earlier look at the USDA's August point against finals, so the RMSE comparison is not blind to that look. The replication gate was set by reproducing NASS's printed August production RMSE for the 2015 issue, which was 4.33 compared to the printed value of 4.3. Various models were tried, including baselines B0, B1, and B2, as well as M1, M2, and M3. A weather model was dropped before scoring. Timestamps and frozen rules close the look-ahead route; they do not settle the quality of the score.
+One disclosure: replicating the NASS reliability table was an earlier look at the USDA's August point against finals, so the RMSE comparison is not blind to that look. The replication gate was passed by reproducing NASS's printed August production RMSE for the 2015 issue, which was 4.33 compared to the printed value of 4.3. A weather model was dropped before scoring. Timestamps and frozen rules close the look-ahead route; they do not settle the quality of the score.
 
 ## What the score says
 
@@ -24,11 +24,11 @@ A family of 33 exploratory tests was conducted, with none yielding a p-value bel
 
 ## From yield band to stocks-to-use
 
-Our yield forecast for August 2025 was 178.6 to 200.6 bu/ac, with the USDA estimating 188.8 bu/ac. The final yield in January came in at 186.5 bu/ac, which is inside our band. For production, we estimated a range of 15,592 to 17,893 Mbu, while the USDA estimated 16,742 Mbu. The January final production was 17,021 Mbu, also within our band.
+Our 80% band around USDA's August 2025 print of 188.8 bu/ac ran from 178.6 to 200.6 bu/ac. The final yield in January came in at 186.5 bu/ac, which is inside our band. For production, we estimated a range of 15,592 to 17,893 Mbu, while the USDA estimated 16,742 Mbu. The January final production was 17,021 Mbu, also within our band.
 
-We use these production estimates to inform our balance sheet projections. By applying historical production miss rates, we generate a range of possible production outcomes. Our production band is then used to estimate stocks-to-use ratios. The USDA's August balance sheet shows a stocks-to-use ratio of 13.3%, while our own estimates suggest a wider range, with the 10th percentile at 6.1%.
+The production quantiles go through USDA's August balance sheet with beginning stocks, imports and total use held fixed. Our production band is then used to estimate stocks-to-use ratios. The USDA's August balance sheet shows a stocks-to-use ratio of 13.3%, while our own estimates suggest a wider range, with the 10th percentile at 6.1%.
 
-The relationship between stocks-to-use and price exhibits convexity, as described by Wright in 2011. This means that prices tend to rise more sharply as stocks approach a floor. So the price effect of the downside stocks-to-use tail outweighs that of the equally sized upside. Our approach focuses on the yield tail and its implications for stocks-to-use, which is where we believe the desk value lies. The August 2025 stocks-to-use quantiles show a median of 13.4% and a 90th percentile of 20.5%. Conditional on the USDA's use projections, our analysis suggests that the yield tail becomes a critical factor in determining stocks-to-use ratios.
+The relationship between stocks-to-use and price exhibits convexity, as described by Wright in 2011. This means that prices tend to rise more sharply as stocks approach a floor. So the price effect of the downside stocks-to-use tail outweighs that of the equally sized upside. Our approach focuses on the yield tail and its implications for stocks-to-use. The August 2025 stocks-to-use quantiles show a median of 13.4% and a 90th percentile of 20.5%. These quantiles are conditional on USDA's use projections and are not scored.
 
 ## Where the band breaks
 
@@ -40,7 +40,7 @@ In 2019, a year with late planting, the final fell within the 80% band for all o
 
 ## Beyond US corn
 
-Our research code, unchanged and unaltered, has been applied to Russian wheat production data from the USDA's World Agricultural Supply and Demand Estimates (WASDE) table. The focus is on production, not yield. The question at hand is how well the initial August print by the USDA matches the eventual settled figure, which is considered the truth source. The object of measurement is the USDA's revisions, not the actual harvest or crop tracking.
+Our research code, unchanged, has been applied to Russian wheat production data from the USDA's World Agricultural Supply and Demand Estimates (WASDE) table. The focus is on production, not yield. The question at hand is how well the initial August print by the USDA matches the eventual settled figure, which is considered the truth source. The object of measurement is the USDA's revisions, not the actual harvest or crop tracking.
 
 The results show that the 80% band, derived from our code, covered 18 out of 18 seasons from 2006 to 2023. The Clopper-Pearson interval for this coverage is between 84.7% and 100%. The verdict on the band is "too wide", with the estimator alone expecting 84.4% coverage, accounting for approximately 4 points of excess coverage.
 

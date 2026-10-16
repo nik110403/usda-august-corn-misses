@@ -28,6 +28,8 @@ make memo           # tables, figure, memo PDF, write-up, number trace
 
 `make evaluate` is the single pre-registered scoring run. It refuses to run if the pre-registration hash, a leakage test or a count check fails. Its outputs are already in `out/eval/`.
 
+A clean rebuild is `make store forecasts quickstats memo` (or `make all`); `make evaluate` and `make russia` are one-shot scoring runs whose outputs ship in `out/`.
+
 ## Layout
 
 | Path | Contents |
