@@ -1,0 +1,37 @@
+uv run python -I -m cfstore russia-forecasts
+out/russia/forecasts.csv: 2210 rows
+uv run python -I -m cfstore russia
+Russia wheat M1 availability counts (scored forecast row / of those with a truth value; no coverage computed):
+  May: 50% band 21/18; 80% band 21/18; 90% band 11/8
+  Jun: 50% band 21/18; 80% band 21/18; 90% band 11/8
+  Jul: 50% band 21/18; 80% band 21/18; 90% band 11/8
+  Aug: 50% band 21/18; 80% band 21/18; 90% band 11/8
+  Sep: 50% band 21/18; 80% band 21/18; 90% band 11/8
+  Oct: 50% band 19/17; 80% band 19/17; 90% band 9/7
+  Nov: 50% band 20/18; 80% band 20/18; 90% band 10/8
+Russia wheat production, M1 (exploratory; PREREG-AMENDMENTS 2026-10-16 F10). Question: how far USDA's first print of Russian wheat moves before USDA settles it.
+Scored August seasons (80% band, with truth): 18
+
+May 50%: x/n = 13/18, coverage 0.7222, 90% CP [0.5022, 0.8836], descriptive
+May 80%: x/n = 16/18, coverage 0.8889, 90% CP [0.6897, 0.9799], descriptive
+May 90%: x/n = 7/8, coverage 0.8750, 90% CP [0.5293, 0.9936], descriptive
+Jun 50%: x/n = 12/18, coverage 0.6667, 90% CP [0.4460, 0.8437], descriptive
+Jun 80%: x/n = 18/18, coverage 1.0000, 90% CP [0.8467, 1.0000], descriptive
+Jun 90%: x/n = 8/8, coverage 1.0000, 90% CP [0.6877, 1.0000], descriptive
+Jul 50%: x/n = 12/18, coverage 0.6667, 90% CP [0.4460, 0.8437], descriptive
+Jul 80%: x/n = 17/18, coverage 0.9444, 90% CP [0.7623, 0.9972], descriptive
+Jul 90%: x/n = 8/8, coverage 1.0000, 90% CP [0.6877, 1.0000], descriptive
+Aug 50%: x/n = 16/18, coverage 0.8889, 90% CP [0.6897, 0.9799], descriptive
+Aug 80%: x/n = 18/18, coverage 1.0000, 90% CP [0.8467, 1.0000], exploratory - too wide
+Aug 90%: x/n = 8/8, coverage 1.0000, 90% CP [0.6877, 1.0000], descriptive
+Sep 50%: x/n = 12/18, coverage 0.6667, 90% CP [0.4460, 0.8437], descriptive
+Sep 80%: x/n = 18/18, coverage 1.0000, 90% CP [0.8467, 1.0000], descriptive
+Sep 90%: x/n = 8/8, coverage 1.0000, 90% CP [0.6877, 1.0000], descriptive
+Oct 50%: x/n = 12/17, coverage 0.7059, 90% CP [0.4781, 0.8762], descriptive
+Oct 80%: x/n = 16/17, coverage 0.9412, 90% CP [0.7499, 0.9970], descriptive
+Oct 90%: x/n = 7/7, coverage 1.0000, 90% CP [0.6518, 1.0000], descriptive
+Nov 50%: x/n = 12/18, coverage 0.6667, 90% CP [0.4460, 0.8437], descriptive
+Nov 80%: x/n = 18/18, coverage 1.0000, 90% CP [0.8467, 1.0000], descriptive
+Nov 90%: x/n = 8/8, coverage 1.0000, 90% CP [0.6877, 1.0000], descriptive
+
+wrote 4 files to out/russia/ (leakage groups passed: leakage (other), leakage test 1, leakage test 2, leakage test 3, leakage test 4, model-layer leakage)

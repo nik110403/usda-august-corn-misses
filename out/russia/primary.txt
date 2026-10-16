@@ -1,0 +1,28 @@
+code commit: 1d3a19d2f4587de510976444838b43208a29d1e4+dirty
+generated: 2026-10-16T13:23:02Z
+forecasts_sha256: 55640edb4f3f076d3063d4c3178baf5ac6a7e444f3f2b84d27915c11ee970b3f
+
+Russia wheat production, M1 (exploratory; PREREG-AMENDMENTS 2026-10-16 F10). Question: how far USDA's first print of Russian wheat moves before USDA settles it.
+Scored August seasons (80% band, with truth): 18
+
+May 50%: x/n = 13/18, coverage 0.7222, 90% CP [0.5022, 0.8836], descriptive
+May 80%: x/n = 16/18, coverage 0.8889, 90% CP [0.6897, 0.9799], descriptive
+May 90%: x/n = 7/8, coverage 0.8750, 90% CP [0.5293, 0.9936], descriptive
+Jun 50%: x/n = 12/18, coverage 0.6667, 90% CP [0.4460, 0.8437], descriptive
+Jun 80%: x/n = 18/18, coverage 1.0000, 90% CP [0.8467, 1.0000], descriptive
+Jun 90%: x/n = 8/8, coverage 1.0000, 90% CP [0.6877, 1.0000], descriptive
+Jul 50%: x/n = 12/18, coverage 0.6667, 90% CP [0.4460, 0.8437], descriptive
+Jul 80%: x/n = 17/18, coverage 0.9444, 90% CP [0.7623, 0.9972], descriptive
+Jul 90%: x/n = 8/8, coverage 1.0000, 90% CP [0.6877, 1.0000], descriptive
+Aug 50%: x/n = 16/18, coverage 0.8889, 90% CP [0.6897, 0.9799], descriptive
+Aug 80%: x/n = 18/18, coverage 1.0000, 90% CP [0.8467, 1.0000], exploratory - too wide
+Aug 90%: x/n = 8/8, coverage 1.0000, 90% CP [0.6877, 1.0000], descriptive
+Sep 50%: x/n = 12/18, coverage 0.6667, 90% CP [0.4460, 0.8437], descriptive
+Sep 80%: x/n = 18/18, coverage 1.0000, 90% CP [0.8467, 1.0000], descriptive
+Sep 90%: x/n = 8/8, coverage 1.0000, 90% CP [0.6877, 1.0000], descriptive
+Oct 50%: x/n = 12/17, coverage 0.7059, 90% CP [0.4781, 0.8762], descriptive
+Oct 80%: x/n = 16/17, coverage 0.9412, 90% CP [0.7499, 0.9970], descriptive
+Oct 90%: x/n = 7/7, coverage 1.0000, 90% CP [0.6518, 1.0000], descriptive
+Nov 50%: x/n = 12/18, coverage 0.6667, 90% CP [0.4460, 0.8437], descriptive
+Nov 80%: x/n = 18/18, coverage 1.0000, 90% CP [0.8467, 1.0000], descriptive
+Nov 90%: x/n = 8/8, coverage 1.0000, 90% CP [0.6877, 1.0000], descriptive
