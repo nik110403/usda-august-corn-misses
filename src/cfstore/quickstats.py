@@ -83,9 +83,25 @@ def replication_check(by: dict) -> str:
     return "\n".join(lines)
 
 
+def committed_truth() -> dict:
+    """Clean clone: NASS rotates the dated bulk file (the URL 404s within days), so rebuild from the committed extract,
+    provided its source_sha256 matches the manifest row for URL."""
+    sha = read_manifest()[URL]["sha256"]
+    with TRUTH.open(newline="") as f:
+        rows = list(csv.DictReader(f))
+    if {r["source_sha256"] for r in rows} != {sha}:
+        raise ValueError(f"{TRUTH.relative_to(ROOT)} does not trace to manifest sha256 {sha}")
+    return {int(r["crop_year"]): {"yield": {"value": r["yield_bu_ac"]}, "production": {"value": r["production_bu"]}}
+            for r in rows}
+
+
 def run() -> int:
-    register()
-    by = write_truth()
+    if not RAW.exists() and not RAW.with_name(RAW.name + ".part").exists():
+        print(f"{RAW.relative_to(ROOT)} absent (NASS no longer serves this dated file); using committed {TRUTH.relative_to(ROOT)}")
+        by = committed_truth()
+    else:
+        register()
+        by = write_truth()
     txt = replication_check(by)
     (ROOT / "out").mkdir(exist_ok=True)
     (ROOT / "out" / "quickstats_replication.txt").write_text(txt + "\n")
