@@ -28,8 +28,11 @@ def main() -> None:
     elif cmd == "quickstats":
         from .quickstats import run
         sys.exit(run())
+    elif cmd == "memo":
+        from .memo import build
+        print(build())
     else:
-        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|preflight|evaluate|quickstats")
+        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|preflight|evaluate|quickstats|memo")
 
 
 main()
