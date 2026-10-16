@@ -1,0 +1,23 @@
+season,origin_date,stu_usda_pct,stu_q10_pct,stu_q50_pct,stu_q90_pct,ending_stocks_q10_mbu,flag,label,inputs_sha256
+2004,2004-08-12,10.5597,1.1757,11.5483,17.5675,126.0404,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2005,2005-08-12,17.9754,8.9575,19.3198,25.9000,946.8111,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2006,2006-08-11,10.4274,1.8719,11.7029,17.9457,221.1593,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2007,2007-08-10,11.9464,2.4727,13.3587,20.2716,313.7848,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2008,2008-08-12,8.8898,0.0104,9.8252,16.6926,1.3300,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2009,2009-08-12,12.5903,3.4623,13.5519,20.6116,445.7688,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2010,2010-08-12,9.7257,0.6015,10.6870,17.7437,81.1431,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2011,2011-08-11,5.4255,,6.3776,13.3673,-475.3218,infeasible under fixed use — implies demand rationing,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2012,2012-08-10,5.7906,,6.2677,13.5621,-342.6979,infeasible under fixed use — implies demand rationing,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2013,2013-08-12,14.4931,4.4930,15.0326,23.2808,569.4890,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2014,2014-08-12,13.4574,6.2835,13.9763,21.1469,844.1859,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2015,2015-08-12,12.4356,5.6113,13.3995,19.7503,772.9515,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2016,2016-08-12,16.6138,9.4358,17.1330,24.3077,1368.1879,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2017,2017-08-10,15.8951,9.0970,16.3868,23.1817,1300.8747,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2018,2018-08-10,11.2417,4.5536,11.7254,18.4103,682.1333,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2019,2019-08-12,15.4352,8.6779,15.9240,22.6782,1226.1838,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2020,2020-08-12,18.6531,11.5506,18.8116,26.2661,1706.6020,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2021,2021-08-12,8.4778,1.2551,8.6321,15.8904,183.8772,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2022,2022-08-12,9.5559,2.4642,9.7074,16.8341,357.9264,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2023,2023-08-11,15.3023,7.7691,15.4632,23.0335,1117.9801,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2024,2024-08-12,13.8523,6.9001,14.0074,20.8135,1032.6000,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+2025,2025-08-12,13.2686,6.0611,13.4293,20.4853,967.0444,,conditional on USDA's use projections; not scored; never called calibrated,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
