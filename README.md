@@ -42,4 +42,6 @@ A clean rebuild is `make store forecasts quickstats memo` (or `make all`); `make
 | `docs/` | memo and write-up sources |
 | `tests/` | leakage, validation, model and rendering tests |
 
-Data: USDA public releases (WASDE, NASS Crop Production and Crop Progress, NASS Quick Stats).
+## Data and licence
+
+Code: MIT (`LICENSE`). Data: USDA public releases (WASDE from the World Agricultural Outlook Board; Crop Production, Crop Progress and the Quick Stats bulk file from NASS), fetched from USDA ESMIS and nass.usda.gov. These are US government works. Credit: U.S. Department of Agriculture. The derived CSVs in `data/` are re-tabulations of those releases, each row keyed to the release that printed it; values are not altered. This project uses NASS data but is not endorsed or certified by NASS, and no USDA agency endorses its methods or results.
