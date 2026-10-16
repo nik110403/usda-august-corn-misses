@@ -52,6 +52,15 @@ Every exhibit in the memo and write-up, the command that makes it and the file i
 | Russian wheat port (exploratory) | `make russia` (one run, already done) | `out/russia/primary.txt`, `out/russia/coverage.csv` |
 | Memo and write-up | `make memo` | `out/memo.pdf`, `out/memo.md`, `out/writeup.md` |
 
+## Live 2026 band
+
+`make live` applies M1 and PROD unchanged to the 2026 crop at the August, September and October origins and writes `out/live/bands_2026.md` and `.csv`. It is forecast-only: no truth exists yet, nothing is scored here, and it settles against the January 2027 Crop Production Annual Summary. An 80% band is expected to miss about one season in five.
+
+| Horizon | Yield 80% band (bu/ac) | Production 80% band (Mbu) |
+|---|---|---|
+| August (USDA 180.7 bu/ac, 16013 Mbu) | 171.0 to 192.0 | 14913 to 17114 |
+| October (USDA 181.2 bu/ac, 16034 Mbu) | 176.4 to 185.7 | 15646 to 16398 |
+
 ## Data availability
 
 | Dataset | Source | Access | Included |

@@ -82,3 +82,11 @@ PREREG.md is unchanged. From the Opus review of f10-russia (SHIP, SEV3 only):
 1. **Same gates (item 7).** The Russia leakage gate now runs tests/test_models.py too, so it covers the same test set as `evaluate`, plus tests/test_russia.py.
 2. **Counts pinned.** `make russia` refuses to score unless the scored-season counts equal the `russia-preflight` counts of 2026-10-16: 18 seasons at 50% and 80% for May-Sep and Nov, 17 in October, and 8 / 7 at 90%. August 80% has 18 seasons, the 2006-2023 crop years.
 3. **Correction to note 5.** The missing October origins are Oct 2013 (no WASDE in the archive, US government shutdown) and Oct 2025. Oct 2008 is present. The counts are unchanged.
+
+## 2026-10-16 — F11 live 2026 band (display, unscored)
+
+Written before the 2026 truth exists (the January 2027 Crop Production Annual Summary is the settling vintage).
+1. **Forecast-only.** `make live` (src/cfstore/live.py) writes M1 yield and PROD production bands at the 50%, 80% and 90% levels into `out/live/`, for the 2026 origins in August, September and October (2026-08-12, 2026-09-11, 2026-10-09).
+2. **Nothing changes.** M1 and PROD are the unchanged `Run.m1` / `Run.prod` code paths; no model, scoring or `SEASONS` code is touched, and no existing output is rewritten.
+3. **No score.** No truth is read and no coverage is computed. Nothing in this entry alters any PREREG score, test, count or verdict; PREREG.md and PREREG.sha256 are unchanged.
+4. **Hash gate checked.** PREREG.sha256 covers PREREG.md only, so appending here breaks no gate.

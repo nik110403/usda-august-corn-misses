@@ -14,7 +14,7 @@ HEX = re.compile(r"\b(?=[0-9a-f]*[a-f])[0-9a-f]{7,}\b")
 CODE = re.compile(r"`[^`]*`")
 LINK = re.compile(r"\]\([^)]*\)")
 EXTRA = ["out/replication.txt", "out/stocks_to_use.csv", "out/quickstats_replication.txt", "out/crop_progress_overlap_count.txt", "PREREG.md", "PREREG-AMENDMENTS.md"]
-SRC_DIRS = ["out/eval", "out/russia", "out/memo"]
+SRC_DIRS = ["out/eval", "out/russia", "out/memo", "out/live"]
 
 
 def clean(line: str) -> str:
