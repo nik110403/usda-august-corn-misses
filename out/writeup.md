@@ -1,4 +1,4 @@
-# How wide is USDA's August corn number?
+# How far can USDA's August corn yield miss the January final? Testing an 80% band, 2004–2025
 
 Every August, the USDA's WASDE and Crop Production reports release the first survey-based US corn yield estimate, prompting grains desks to rapidly rebuild their balance sheets. This initial point estimate provides a direction, but to inform positioning, desks need to understand how far the January final can land from it. To assess this, I test whether a band built from the USDA's past August misses could maintain its stated coverage over 22 seasons.
 

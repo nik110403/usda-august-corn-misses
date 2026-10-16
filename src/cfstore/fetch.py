@@ -17,7 +17,7 @@ RAW = DATA / "raw"
 MANIFEST = DATA / "manifest.csv"
 FIELDS = ["url", "retrieval_utc", "sha256", "bytes", "local_path"]
 DELAY_S = 0.5
-UA = "commodity-fundamentals-research/0.1 (nik@khosravipour.at)"
+UA = "usda-august-corn-misses/0.1 (nik@khosravipour.at)"
 _last = [0.0]
 
 

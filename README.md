@@ -1,4 +1,4 @@
-# How wide is USDA's August corn number?
+# How far can USDA's August corn yield miss the January final? Testing an 80% band, 2004–2025
 
 Each August, USDA prints its first survey-based US corn yield, and grains desks rebuild their balance sheets around it. This repository puts an 80% band around that print, built only from USDA's own past August misses against the January final. It then scores the band on every season from 2004 to 2025, using only what was public on each release morning, as archived (releases that survive only as corrected copies are flagged).
 
