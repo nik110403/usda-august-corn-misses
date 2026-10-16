@@ -1,7 +1,7 @@
 PY = uv run python -I -m cfstore
 .PHONY: all store test-leakage test-validation test-baselines test-models test-russia replication skeleton forecasts quickstats preflight evaluate russia-store russia-forecasts russia-preflight russia memo-assets memo
-# clean rebuild (F8): store -> forecasts -> quickstats -> memo; never re-scores (evaluate and russia are one-shot, outputs ship in out/)
-all: store forecasts quickstats memo
+# clean rebuild (F8): store -> forecasts -> quickstats -> replication -> memo; never re-scores (evaluate and russia are one-shot, outputs ship in out/)
+all: store forecasts quickstats replication memo
 
 # rebuilds data/{listing,store,wasde_releases,txt_selection}.csv (both WASDE eras) and data/nass_{listing,releases,selection}.csv
 # (Crop Progress, Crop Production, Annual Summary) from the manifest-backed raw files, then out/crop_progress_overlap*.
@@ -15,9 +15,9 @@ test-validation:
 # F5 baselines B0/B1/B2 + replication helpers: shapes, as-of correctness, formulas; computes no score (separate from test-leakage)
 test-baselines:
 	uv run pytest tests/test_baselines.py -q
-# NASS August corn production reliability replication (2015, 2025 issues) + Good-Irwin check; a data-validation gate, not a PREREG score
+# NASS August corn production reliability replication (2015, 2025 issues) + Good-Irwin check; a data-validation gate, not a PREREG score; output kept in out/replication.txt
 replication:
-	$(PY) replication
+	$(PY) replication | tee out/replication.txt
 skeleton:
 	$(PY) skeleton
 # F6a forecast layer + evaluation-harness tests (synthetic data only; no score on real seasons)

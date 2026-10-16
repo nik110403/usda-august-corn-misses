@@ -1,8 +1,8 @@
 # How wide is USDA's August corn number?
 
-Each August, USDA prints its first survey-based US corn yield, and grains desks rebuild their balance sheets around it. This repository puts an 80% band around that print, built only from USDA's own past August misses against the January final. It then scores the band on every season from 2004 to 2025, using only what was public on each release morning.
+Each August, USDA prints its first survey-based US corn yield, and grains desks rebuild their balance sheets around it. This repository puts an 80% band around that print, built only from USDA's own past August misses against the January final. It then scores the band on every season from 2004 to 2025, using only what was public on each release morning, as archived (releases that survive only as corrected copies are flagged).
 
-**Headline.** The 80% August band covered 21 of 22 seasons (95.5%; 90% Clopper-Pearson interval 80.2% to 99.8%). The pre-registered verdict is "too wide". The estimator is conservative by construction: at these sample sizes it is expected to cover 84.2% of seasons, so about 4 points of the excess coverage come from the estimator itself. Adding crop condition (Good/Excellent share) is not distinguishable from the plain band at August (one-sided p = 0.888, 22 seasons). None of the 33 exploratory tests falls below 0.05 after Holm adjustment.
+**Headline.** The 80% August band covered 21 of 22 seasons (95.5%; 90% Clopper-Pearson interval 80.2% to 99.8%). The pre-registered verdict is "too wide". The estimator is conservative by construction: at these sample sizes it is expected to cover 84.2% of seasons, so about 4 points of the excess are expected from the estimator itself. M3 and M1 are not distinguishable at August with 22 seasons: adding crop condition (Good/Excellent share) did not improve mean pinball loss (one-sided p = 0.888). None of the 33 exploratory tests falls below 0.05 after Holm adjustment.
 
 ![USDA's August yield, the 80% band and the January final, 2004–2025](out/memo/fig_aug_band.png)
 
@@ -11,9 +11,9 @@ The memo (`out/memo.pdf`) and the longer write-up (`out/writeup.md`) give the Au
 ## What makes the score honest
 
 - **As-of store.** Every value carries the timestamp of the release that printed it, rebuilt from the raw USDA ESMIS archive (WASDE, Crop Production, Crop Progress). A guard refuses any value released after the forecast origin, and leakage tests run before every scored run.
-- **Corrections as records.** Releases that survive only as corrected copies are flagged, not silently used. A sensitivity run drops the affected origins.
+- **Corrections as records.** Releases that survive only as corrected copies are flagged and used as archived. A sensitivity run drops the 2 affected origins; the August band still covers 21 of 22.
 - **Rules first.** The acceptance rule, wording, sample and test family were frozen in `PREREG.md` (hash in `PREREG.sha256`) before any score existed. Later changes are logged with reasons in `PREREG-AMENDMENTS.md`. The evaluation ran once.
-- **Every number traced.** `make memo` fails if any number in the memo, the write-up or this README does not appear in a generated output file or the pre-registration.
+- **Every number traced.** `make memo` fails if any number in the memo, the write-up or this README does not appear in a generated output file or the pre-registration. The check is for presence, not meaning.
 
 ## Reproduce
 
@@ -28,7 +28,7 @@ make memo           # tables, figure, memo PDF, write-up, number trace
 
 `make evaluate` is the single pre-registered scoring run. It refuses to run if the pre-registration hash, a leakage test or a count check fails. Its outputs are already in `out/eval/`.
 
-A clean rebuild is `make store forecasts quickstats memo` (or `make all`); `make evaluate` and `make russia` are one-shot scoring runs whose outputs ship in `out/`.
+A clean rebuild is `make store forecasts quickstats replication memo` (or `make all`); `make evaluate` and `make russia` are one-shot scoring runs whose outputs ship in `out/`.
 
 ## Layout
 
@@ -36,7 +36,7 @@ A clean rebuild is `make store forecasts quickstats memo` (or `make all`); `make
 |---|---|
 | `src/cfstore/` | store, as-of guard, models, evaluation, memo rendering, number trace |
 | `data/` | release tables, selection logs, manifest (raw files under `data/raw/` are fetched, not committed) |
-| `out/eval/` | scored results: coverage, test family with Holm-adjusted p, stress years, sensitivities |
+| `out/eval/` | scored results: coverage, test family with Holm-adjusted p, stress years, sensitivities; they record the hash of the scored `forecasts.csv`, which differs from the shipped file only in its build-stamp columns |
 | `out/memo/` | memo tables, figure and headline |
 | `out/russia/` | exploratory Russian wheat port |
 | `docs/` | memo and write-up sources |

@@ -1,5 +1,5 @@
 """F7b number trace: every numeric token in out/memo.md, out/writeup.md and README.md must appear (after normalisation) in a
-generated file (out/eval, out/russia, out/memo, two out/*.txt) or in PREREG*.md, or be allowed (1-10, years 1990-2030,
+generated file (out/eval, out/russia, out/memo, three out/*.txt, out/stocks_to_use.csv) or in PREREG*.md, or be allowed (1-10, years 1990-2030,
 docs/trace_allow.txt). Table rows ('|') of the rendered out/*.md are skipped: they are included verbatim from generated files.
 """
 import re
@@ -13,7 +13,7 @@ NUM_PLAIN = re.compile(r"\d+(?:\.\d+)?")
 HEX = re.compile(r"\b(?=[0-9a-f]*[a-f])[0-9a-f]{7,}\b")
 CODE = re.compile(r"`[^`]*`")
 LINK = re.compile(r"\]\([^)]*\)")
-EXTRA = ["out/quickstats_replication.txt", "out/crop_progress_overlap_count.txt", "PREREG.md", "PREREG-AMENDMENTS.md"]
+EXTRA = ["out/replication.txt", "out/stocks_to_use.csv", "out/quickstats_replication.txt", "out/crop_progress_overlap_count.txt", "PREREG.md", "PREREG-AMENDMENTS.md"]
 SRC_DIRS = ["out/eval", "out/russia", "out/memo"]
 
 

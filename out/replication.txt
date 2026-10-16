@@ -1,0 +1,22 @@
+NASS August corn PRODUCTION reliability, replicated from the store (deviation in % of final; latest 20 crop years)
+issue    final window       RMSE% printed   diff  below/above  printed    mean/min/max Mbu        printed  verdict
+Aug 2015 a     1995-2014    4.38     4.3  +0.08         13/7    10/10           352/2/918     344/16/940  RMSE ok, counts MISS
+Aug 2015 b     1995-2014    4.34     4.3  +0.04        10/10    10/10          342/16/918     344/16/940  RMSE ok, counts exact
+Aug 2025 a     2005-2024    3.60     3.8  -0.20         9/11     7/13          357/2/1096     370/5/1192  RMSE MISS, counts MISS
+Aug 2025 b     2005-2024    3.69     3.8  -0.11         7/13     7/13          361/5/1167     370/5/1192  RMSE MISS, counts exact
+Aug 2015: GATE MET with final b (RMSE within 0.1 pp, counts off by at most one)
+Aug 2025: GATE MISSED with both finals. Likely cause (hypothesis, not verified): NASS's printed 'final' is its latest revised estimate, which probably includes Census-benchmark revisions made years after the January Annual Summary (an Annual Summary restates only the two previous crop years). The store holds no vintage after (b), so the older years' finals would differ. Directional evidence: the store finals' mean and largest differences are below the printed ones in both years (370 / 1,192 Mbu printed in 2025, 361 / 1,167 here). Checkable later against Quick Stats latest values. Not tuned further.
+
+Good-Irwin qualitative check: RMSE (% of final) of the Crop Production forecast by issue month (qualitative, not a PREREG score)
+production_kbu  final a 1995-2024 n=29  Aug 4.10  Sep 3.17  Oct 1.77  Nov 1.03  largest: Aug
+production_kbu  final a 2005-2024 n=19  Aug 3.68  Sep 2.73  Oct 1.87  Nov 1.15  largest: Aug
+production_kbu  final a 1995-2014 n=19  Aug 4.49  Sep 3.54  Oct 1.68  Nov 0.94  largest: Aug
+production_kbu  final b 1995-2024 n=29  Aug 4.15  Sep 3.21  Oct 1.87  Nov 1.20  largest: Aug
+production_kbu  final b 2005-2024 n=19  Aug 3.78  Sep 2.85  Oct 2.01  Nov 1.28  largest: Aug
+production_kbu  final b 1995-2014 n=19  Aug 4.45  Sep 3.51  Oct 1.70  Nov 1.06  largest: Aug
+yield           final a 1995-2024 n=29  Aug 3.97  Sep 3.20  Oct 1.85  Nov 1.01  largest: Aug
+yield           final a 2005-2024 n=19  Aug 3.22  Sep 2.58  Oct 1.86  Nov 1.13  largest: Aug
+yield           final a 1995-2014 n=19  Aug 4.57  Sep 3.63  Oct 1.76  Nov 0.89  largest: Aug
+yield           final b 1995-2024 n=29  Aug 3.97  Sep 3.21  Oct 1.87  Nov 1.00  largest: Aug
+yield           final b 2005-2024 n=19  Aug 3.25  Sep 2.62  Oct 1.92  Nov 1.16  largest: Aug
+yield           final b 1995-2014 n=19  Aug 4.55  Sep 3.62  Oct 1.74  Nov 0.82  largest: Aug

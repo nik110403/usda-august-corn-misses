@@ -31,18 +31,18 @@ def test_coverage_table_matches_eval():
 def test_compact_coverage_matches_table():
     full = {(r["model"], r["horizon"], r["level"]): r for r in rd(OUT / "memo" / "coverage_table.csv")}
     rows = rd(OUT / "memo" / "coverage_memo.csv")
-    assert [(r["Band"], r["Horizon"], r["Level"]) for r in rows] == [(m, h, "80%") for m, h in zip(
-        ["Yield", "Yield", "Yield", "Yield (primary)", "Yield", "Yield", "Yield"], ["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"])] + [
-        ("Production", "Aug", "80%")]
+    assert [(r["Band"], r["Status"], r["Horizon"], r["Level"]) for r in rows] == [
+        ("Yield", "primary" if h == "Aug" else "exploratory", h, "80%") for h in ["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"]] + [
+        ("Production", "exploratory", "Aug", "80%")]
     for r in rows:
-        f = full[({"Yield": "M1", "Production": "PROD"}[r["Band"].split()[0]], r["Horizon"], r["Level"])]
+        f = full[({"Yield": "M1", "Production": "PROD"}[r["Band"]], r["Horizon"], r["Level"])]
         assert (r["n"], r["x"]) == (f["n"], f["x"])
         assert r["Coverage"] == f"{100 * float(f['coverage']):.1f}%"
         assert r["CP90"] == f"[{100 * float(f['cp90_lo']):.1f}%, {100 * float(f['cp90_hi']):.1f}%]"
         assert r["Pre-registered verdict"] == {"not distinguishable from 80% at this sample size, and not shown equivalent": "not distinguishable",
                                 "": "descriptive"}.get(f["wording"], f["wording"])
     md = (OUT / "memo" / "coverage_memo.md").read_text().splitlines()
-    assert md[0].startswith("| Band | Horizon | Level | n | x | Coverage | CP90 | Pre-registered verdict |") and len(md) == 2 + len(rows)
+    assert md[0].startswith("| Band | Status | Horizon | Level | n | x | Coverage | CP90 | Pre-registered verdict |") and len(md) == 2 + len(rows)
     assert all(ln.startswith("|") for ln in md)
 
 

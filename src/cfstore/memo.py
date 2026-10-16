@@ -80,7 +80,7 @@ def coverage_rows(cov: list[dict]) -> list[dict]:
 
 
 def compact_rows(rows: list[dict]) -> list[dict]:
-    """Memo coverage table: M1 (yield) 80% May..Nov, PROD (production) 80% Aug; a pure re-formatting of coverage_rows (never recomputed)."""
+    """Memo coverage table: M1 (yield) 80% May..Nov, PROD (production) 80% Aug, with the PREREG §5 primary/exploratory status; a pure re-formatting of coverage_rows (never recomputed)."""
     idx = {(r["model"], r["horizon"], r["level"]): r for r in rows}
     want = [("M1", h, "80%") for h in HORIZONS] + [("PROD", "Aug", "80%")]
     name = {"M1": "Yield", "PROD": "Production"}
@@ -88,7 +88,7 @@ def compact_rows(rows: list[dict]) -> list[dict]:
     for k in want:
         r = idx[k]
         w = r["wording"] or "descriptive, no wording"
-        out.append({"Band": name[r["model"]] + (" (primary)" if r["label"] == "primary" else ""), "Horizon": r["horizon"], "Level": r["level"],
+        out.append({"Band": name[r["model"]], "Status": r["label"], "Horizon": r["horizon"], "Level": r["level"],
                     "n": r["n"], "x": r["x"], "Coverage": pct(r["coverage"]), "CP90": f"[{pct(r['cp90_lo'])}, {pct(r['cp90_hi'])}]",
                     "Pre-registered verdict": SHORT_WORDING.get(w, w)})
     return out
@@ -216,8 +216,8 @@ def build(root: Path = ROOT) -> Path:
         f"**Primary result.** M1's 80% band at the August origin covered {x} of {n} seasons ({c}); two-sided 90% "
         f"Clopper-Pearson interval [{lo}, {hi}]. Wording: \"{wd}\".\n\n"
         f"**M3 against M1 (August).** {m3}\n\n"
-        f"**Estimator note.** The estimator is conservative by design: at n = {n} the 80% band is expected to cover "
-        f"{pct(exp, 2)}, so about {round(100 * (exp - 0.8))} points of the excess over 80% are expected from the estimator itself.\n\n"
+        f"**Estimator note.** The estimator is conservative by design: averaged over the {n} scored seasons "
+        f"(training n 9 to 30) the 80% band is expected to cover {pct(exp, 2)}, so about {round(100 * (exp - 0.8))} points of the excess over 80% are expected from the estimator itself.\n\n"
         "**Re-post sensitivity.** `forecasts_v2.csv` is byte-identical to `forecasts.csv` (v2 re-posts carry identical values), "
         "so the re-post sensitivity equals the primary by construction." + foot)
     (out / "manifest.txt").write_text(f"combined inputs sha256 {tag}\n" + "\n".join(f"{k} {v}" for k, v in sorted(shas.items())) + "\n")

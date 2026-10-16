@@ -2,7 +2,7 @@
 
 **M3 against M1 (August).** M3 and M1 are not distinguishable at August with 22 seasons.
 
-**Estimator note.** The estimator is conservative by design: at n = 22 the 80% band is expected to cover 84.15%, so about 4 points of the excess over 80% are expected from the estimator itself.
+**Estimator note.** The estimator is conservative by design: averaged over the 22 scored seasons (training n 9 to 30) the 80% band is expected to cover 84.15%, so about 4 points of the excess over 80% are expected from the estimator itself.
 
 **Re-post sensitivity.** `forecasts_v2.csv` is byte-identical to `forecasts.csv` (v2 re-posts carry identical values), so the re-post sensitivity equals the primary by construction.
 
