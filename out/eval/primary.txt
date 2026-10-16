@@ -1,0 +1,16 @@
+code commit: 40c7b93cae3122372cf4cd3e05d88d2936177543+dirty
+generated: 2026-10-16T12:51:26Z
+forecasts_sha256: 6f92a7fd60c88343fbf36b5e9e4bb63472d5f6682257af32993b150fac5ace67
+forecasts_v2_sha256: 6f92a7fd60c88343fbf36b5e9e4bb63472d5f6682257af32993b150fac5ace67
+
+PREREG section 4 primary analysis (computed in one run with every section 5 and 10 number)
+4.1/4.2 Primary calibration object: M1 80% band at the August origin, primary truth (January first-final).
+  x = 21 of n = 22 seasons covered (95.5%); two-sided 90% Clopper-Pearson interval [80.2%, 99.8%].
+  Wording: "too wide"
+4.4 M3 against M1 at August, one-sided HLN-DM (H1: E[d] > 0, d = L(M1) - L(M3)), alpha = 0.05:
+  n = 22, mean d = -0.1357, t = -1.255 on 21 df, p = 0.8883
+  Wording: "M3 and M1 are not distinguishable at August with 22 seasons."
+
+Corrected-release sensitivity: 2 origins dropped (own WASDE or M3 regressor from a corrected-only release); training errors kept.
+See out/eval/*.csv for sections 5 and 10 (family.csv: 33 tests with Holm-adjusted p).
+Good-Irwin disclosure (PREREG-AMENDMENTS 2026-10-16 item 1): USDA's own Aug-Nov point was already compared with final in the F5 RMSE table (commit 61f8f34), overlapping the scored seasons in 10 / 19 / 20 crop years for the windows 1995-2014 / 2005-2024 / 1995-2024; this RMSE is not blind to that earlier look.
