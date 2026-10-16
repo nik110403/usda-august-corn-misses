@@ -29,7 +29,7 @@ def variants(v: Decimal) -> set[Decimal]:
     out = set()
     vals = [v] + ([v * 100] if 0 <= v <= 1 else [])
     for x in vals:
-        for nd in (0, 1, 2):
+        for nd in (0, 1, 2, 3):  # 3 dp: p-values
             q = Decimal(1).scaleb(-nd)
             for mode in (ROUND_HALF_UP, ROUND_HALF_EVEN):
                 out.add(x.quantize(q, rounding=mode))
