@@ -1,5 +1,5 @@
 PY = uv run python -I -m cfstore
-.PHONY: store test-leakage test-validation test-baselines test-models test-russia replication skeleton forecasts quickstats preflight evaluate russia-store russia-forecasts russia-preflight russia memo-assets
+.PHONY: store test-leakage test-validation test-baselines test-models test-russia replication skeleton forecasts quickstats preflight evaluate russia-store russia-forecasts russia-preflight russia memo-assets memo
 # rebuilds data/{listing,store,wasde_releases,txt_selection}.csv (both WASDE eras) and data/nass_{listing,releases,selection}.csv
 # (Crop Progress, Crop Production, Annual Summary) from the manifest-backed raw files, then out/crop_progress_overlap*.
 store:
@@ -35,6 +35,10 @@ evaluate: forecasts
 # F7a: memo tables, figure and headline into out/memo/ from the finished out/eval, forecasts and stocks-to-use (read-only; no re-evaluation)
 memo-assets:
 	$(PY) memo
+# F7b: memo assets -> render (includes, out/memo.md, out/writeup.md, out/memo.pdf) -> number trace
+memo: memo-assets
+	$(PY) memo-render
+	$(PY) trace
 
 # F10 optional slot (Russia wheat, PREREG-AMENDMENTS 2026-10-16). Parses the Russia row of every archived WASDE world wheat table
 # into data/russia_store.csv (separate from store.csv; same release-time table via wasde_releases.csv).

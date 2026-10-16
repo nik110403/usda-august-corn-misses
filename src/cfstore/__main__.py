@@ -31,6 +31,12 @@ def main() -> None:
     elif cmd == "memo":
         from .memo import build
         print(build())
+    elif cmd == "memo-render":
+        from .render import run
+        sys.exit(run())
+    elif cmd == "trace":
+        from .trace import run
+        sys.exit(run())
     elif cmd == "russia-store":
         from .russia import cmd_store
         print(cmd_store())
@@ -44,7 +50,7 @@ def main() -> None:
         from .russia import run
         sys.exit(run())
     else:
-        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|preflight|evaluate|quickstats|russia-store|russia-forecasts|russia-preflight|russia|memo")
+        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|preflight|evaluate|quickstats|russia-store|russia-forecasts|russia-preflight|russia|memo|memo-render|trace")
 
 
 main()

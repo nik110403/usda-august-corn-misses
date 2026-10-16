@@ -17,7 +17,10 @@ LEVEL_PCT = {"1/2": "50%", "4/5": "80%", "9/10": "90%"}
 INFEASIBLE = "infeasible under fixed use — implies demand rationing"
 EVAL = ["coverage.csv", "stress_years.csv", "primary.txt"]
 OUTPUTS = ["coverage_table.csv", "coverage_table.md", "august_answer.csv", "august_answer.md", "stocks_to_use_aug.csv",
-           "stocks_to_use_aug.md", "stress_years.md", "fig_aug_band.png", "fig_aug_band.svg", "headline.md"]
+           "stocks_to_use_aug.md", "stress_years.md", "fig_aug_band.png", "fig_aug_band.svg", "headline.md", "coverage_memo.md",
+           "coverage_memo.csv"]
+SHORT_WORDING = {"not distinguishable from 80% at this sample size, and not shown equivalent": "not distinguishable",
+                 "descriptive, no wording": "descriptive"}
 
 
 def sha(p: Path) -> str:
@@ -76,6 +79,20 @@ def coverage_rows(cov: list[dict]) -> list[dict]:
     return out
 
 
+def compact_rows(rows: list[dict]) -> list[dict]:
+    """Memo coverage table: M1 80% May..Nov, PROD 80% Aug, B1 90% Aug; a pure re-formatting of coverage_rows (never recomputed)."""
+    idx = {(r["model"], r["horizon"], r["level"]): r for r in rows}
+    want = [("M1", h, "80%") for h in HORIZONS] + [("PROD", "Aug", "80%"), ("B1", "Aug", "90%")]
+    out = []
+    for k in want:
+        r = idx[k]
+        w = r["wording"] or "descriptive, no wording"
+        out.append({"Model": "M1 (primary)" if r["label"] == "primary" else r["model"], "Horizon": r["horizon"], "Level": r["level"],
+                    "n": r["n"], "x": r["x"], "Coverage": pct(r["coverage"]), "CP90": f"[{pct(r['cp90_lo'])}, {pct(r['cp90_hi'])}]",
+                    "Wording": SHORT_WORDING.get(w, w)})
+    return out
+
+
 def season_bands(fc: list[dict], model: str, h: str) -> dict[int, dict]:
     """season -> {point, q_lo, q_hi (percent-error, Fraction), val_lo, val_hi, unit} of the 80% band."""
     res = {}
@@ -119,6 +136,10 @@ def build(root: Path = ROOT) -> Path:
                          f"[{pct(r['cp90_lo'])}, {pct(r['cp90_hi'])}]", pct(r["expected_coverage"]) if r["expected_coverage"] else "",
                          r["label"], r["wording"] or "descriptive, no wording"] for r in rows]))
     (out / "coverage_table.md").write_text("\n".join(md) + foot)
+
+    cm = compact_rows(rows)
+    write_csv(out / "coverage_memo.csv", cm, tag)
+    (out / "coverage_memo.md").write_text(md_table(list(cm[0]), [list(r.values()) for r in cm]) + "\n")
 
     # 2. August answer, latest season
     m1 = season_bands(fc, "M1", "Aug")
