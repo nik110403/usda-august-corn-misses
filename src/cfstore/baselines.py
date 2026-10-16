@@ -6,8 +6,10 @@ Everything is exact rationals. Rows come only from `asof.build_features` (select
 
 PREREG 3 B1 is "scored at 90% against both truths". Reading adopted (PREREG-AMENDMENTS.md, 2026-10-16): "both truths" are the
 primary truth (January first-final) and the sensitivity truth (latest Quick Stats value, a pseudo-vintage) of PREREG 1. The
-PRODUCTION band is the object PREREG 3 defines and is scored against production truth. The YIELD band (production band divided
-by USDA's harvested area at the origin) is a derived/added object NOT defined by PREREG 3; both are returned as separate fields
+PRODUCTION band is the object PREREG 3 defines and is scored against production truth. The YIELD band (B1y in the forecast layer: the
+production band's ratios applied to USDA's yield at the origin, = production band / USDA's implied area; PREREG-AMENDMENTS 2026-10-16
+F6a fix 1 item 1) is a derived/added object NOT defined by PREREG 3; `b1_band` here divides by Crop Production's harvested area and
+is the cross-check; both are returned as separate fields
 and nothing is scored in F5. B1 is unavailable at the Oct 2008 origin (see b1_band).
 """
 import csv
