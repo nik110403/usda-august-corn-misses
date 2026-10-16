@@ -1,33 +1,33 @@
 model,horizon,level,n,x,coverage,cp90_lo,cp90_hi,expected_coverage,label,wording,inputs_sha256
-M1,Aug,80%,22,21,0.9545,0.8019,0.9977,0.8415,primary,too wide,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,May,80%,22,20,0.9091,0.7405,0.9836,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Jun,80%,22,18,0.8182,0.6309,0.9354,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Jul,80%,22,18,0.8182,0.6309,0.9354,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Sep,80%,22,21,0.9545,0.8019,0.9977,0.8415,exploratory,too wide,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Oct,80%,20,17,0.8500,0.6563,0.9578,0.8453,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Nov,80%,22,17,0.7727,0.5802,0.9059,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,May,50%,22,12,0.5455,0.3525,0.7287,0.5435,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Jun,50%,22,12,0.5455,0.3525,0.7287,0.5435,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Jul,50%,22,13,0.5909,0.3952,0.7673,0.5435,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Aug,50%,22,13,0.5909,0.3952,0.7673,0.5435,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Sep,50%,22,16,0.7273,0.5315,0.8740,0.5435,exploratory,too wide,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Oct,50%,20,12,0.6000,0.3936,0.7829,0.5438,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-M1,Nov,50%,22,8,0.3636,0.1956,0.5609,0.5435,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,May,80%,22,19,0.8636,0.6841,0.9618,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Jun,80%,22,17,0.7727,0.5802,0.9059,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Jul,80%,22,18,0.8182,0.6309,0.9354,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Aug,80%,22,20,0.9091,0.7405,0.9836,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Sep,80%,22,21,0.9545,0.8019,0.9977,0.8415,exploratory,too wide,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Oct,80%,20,17,0.8500,0.6563,0.9578,0.8453,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Nov,80%,22,15,0.6818,0.4845,0.8401,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,May,50%,22,9,0.4091,0.2327,0.6048,0.5435,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Jun,50%,22,10,0.4545,0.2713,0.6475,0.5435,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Jul,50%,22,10,0.4545,0.2713,0.6475,0.5435,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Aug,50%,22,14,0.6364,0.4391,0.8044,0.5435,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Sep,50%,22,15,0.6818,0.4845,0.8401,0.5435,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Oct,50%,20,12,0.6000,0.3936,0.7829,0.5438,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-PROD,Nov,50%,22,10,0.4545,0.2713,0.6475,0.5435,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-B1,Aug,90%,22,21,0.9545,0.8019,0.9977,,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-B1,Sep,90%,22,22,1.0000,0.8727,1.0000,,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-B1,Oct,90%,19,18,0.9474,0.7736,0.9973,,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
-B1,Nov,90%,22,21,0.9545,0.8019,0.9977,,descriptive,,48cada180796f2f30e56f6bfb7d02408861dab787acda606bc142c24846a25e2
+M1,Aug,80%,22,21,0.9545,0.8019,0.9977,0.8415,primary,too wide,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,May,80%,22,20,0.9091,0.7405,0.9836,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Jun,80%,22,18,0.8182,0.6309,0.9354,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Jul,80%,22,18,0.8182,0.6309,0.9354,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Sep,80%,22,21,0.9545,0.8019,0.9977,0.8415,exploratory,too wide,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Oct,80%,20,17,0.8500,0.6563,0.9578,0.8453,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Nov,80%,22,17,0.7727,0.5802,0.9059,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,May,50%,22,12,0.5455,0.3525,0.7287,0.5435,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Jun,50%,22,12,0.5455,0.3525,0.7287,0.5435,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Jul,50%,22,13,0.5909,0.3952,0.7673,0.5435,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Aug,50%,22,13,0.5909,0.3952,0.7673,0.5435,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Sep,50%,22,16,0.7273,0.5315,0.8740,0.5435,exploratory,too wide,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Oct,50%,20,12,0.6000,0.3936,0.7829,0.5438,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+M1,Nov,50%,22,8,0.3636,0.1956,0.5609,0.5435,exploratory,"not distinguishable from 50% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,May,80%,22,19,0.8636,0.6841,0.9618,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Jun,80%,22,17,0.7727,0.5802,0.9059,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Jul,80%,22,18,0.8182,0.6309,0.9354,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Aug,80%,22,20,0.9091,0.7405,0.9836,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Sep,80%,22,21,0.9545,0.8019,0.9977,0.8415,exploratory,too wide,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Oct,80%,20,17,0.8500,0.6563,0.9578,0.8453,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Nov,80%,22,15,0.6818,0.4845,0.8401,0.8415,exploratory,"not distinguishable from 80% at this sample size, and not shown equivalent",89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,May,50%,22,9,0.4091,0.2327,0.6048,0.5435,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Jun,50%,22,10,0.4545,0.2713,0.6475,0.5435,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Jul,50%,22,10,0.4545,0.2713,0.6475,0.5435,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Aug,50%,22,14,0.6364,0.4391,0.8044,0.5435,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Sep,50%,22,15,0.6818,0.4845,0.8401,0.5435,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Oct,50%,20,12,0.6000,0.3936,0.7829,0.5438,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+PROD,Nov,50%,22,10,0.4545,0.2713,0.6475,0.5435,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+B1,Aug,90%,22,21,0.9545,0.8019,0.9977,,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+B1,Sep,90%,22,22,1.0000,0.8727,1.0000,,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+B1,Oct,90%,19,18,0.9474,0.7736,0.9973,,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
+B1,Nov,90%,22,21,0.9545,0.8019,0.9977,,descriptive,,89c1e24ab1d7b778af043cf33af3e2f64f6ad81a739c87bb352d38c280ae53ca
