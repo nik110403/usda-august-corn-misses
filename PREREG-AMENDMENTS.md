@@ -66,3 +66,19 @@ PREREG.md is unchanged. Checkpoint 2 chose STRATEGY 6 for the optional slot (TRA
 5. **Scoring.** The headline object is the 80% band at August, with the PREREG 4 acceptance wording (margin [65%, 95%], 90% Clopper-Pearson interval). It is labelled exploratory, sits outside the 33-test family and gets no Holm adjustment. Other horizons and the 50%/90% levels are descriptive: coverage, n and the exact interval only. If fewer than 15 August seasons are scored, the August band is descriptive too and carries no wording. The scored-season count is printed before any coverage is computed.
 6. **Leakage.** The as-of leakage test covers the Russia series: no origin sees a value from a release at or after its own time, and no truth vintage predates the season's last origin. A failure blocks the Russia output.
 7. **Run once.** `make russia` computes every Russia number in one run, on the same gates (PREREG hash, leakage, freshness) as `make evaluate`.
+
+## 2026-10-16 - F10 implementation notes, logged before any Russia score exists (no Russia coverage has been computed; only parsing and availability counts)
+
+These fix how items 1-7 above were read in code (src/cfstore/russia.py, parse_russia.py). None changes a rule; each is a reading where the items were silent.
+1. **Training set is as-of, so the first scored season is 2006.** A past season enters the training errors of a later origin only if its truth vintage (item 3) is strictly earlier than that origin (`RView.truth` returns it only if its release is inside the guarded view). A marketing year is last printed in April of s+3, so for target season t the training seasons are 1995..t-3. Nine errors (the burn-in) therefore exist from t = 2006, not 2004 as in the US series.
+2. **Burn-in is applied at every level.** `models.conformal_rows(..., min_n=9)`, as for B0 (PREREG 3): no tau or band row is scored before nine own errors; the 90% band is additionally unscored until nineteen (rank rule of PREREG 2/3, unchanged).
+3. **Storage.** The Russia line lives in `data/russia_store.csv` (series `wasde.russia_wheat.production`, same columns as `store.csv`), built from `data/wasde_releases.csv` (same release dates, times and first-release rule as the US series; the July 2013 origin is the ORIG xls, the 2008-10-28 abbreviated reissue prints no wheat table and contributes nothing). `store.csv` and the US forecasts are untouched. Freshness for `make russia` hashes `russia_store.csv` + `wasde_releases.csv` and the git object ids of `src/`.
+4. **Origins in 2026.** The May-Oct 2026 WASDEs are origins like any other and get forecast rows; their marketing year is still printed in the latest archived WASDE, so they have no truth and are unscored (item 3).
+5. **Counts.** `make russia-preflight` (availability only, no band comparison) on the real archive: scored rows / with truth for the 80% band are 21/18 at May-Sep, 19/17 at Oct (no Oct 2025 WASDE in the archive), 20/18 at Nov. August has 18 scored seasons (2006-2023), at least 15, so item 5's headline wording applies to the August 80% band.
+
+## 2026-10-16 - F10 merge-time fixes (before any Russia score exists; `make russia` has not been run)
+
+PREREG.md is unchanged. From the Opus review of f10-russia (SHIP, SEV3 only):
+1. **Same gates (item 7).** The Russia leakage gate now runs tests/test_models.py too, so it covers the same test set as `evaluate`, plus tests/test_russia.py.
+2. **Counts pinned.** `make russia` refuses to score unless the scored-season counts equal the `russia-preflight` counts of 2026-10-16: 18 seasons at 50% and 80% for May-Sep and Nov, 17 in October, and 8 / 7 at 90%. August 80% has 18 seasons, the 2006-2023 crop years.
+3. **Correction to note 5.** The missing October origins are Oct 2013 (no WASDE in the archive, US government shutdown) and Oct 2025. Oct 2008 is present. The counts are unchanged.

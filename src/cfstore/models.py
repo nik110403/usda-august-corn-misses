@@ -20,6 +20,7 @@ from .trend import FIRST_SEASON, assert_finals_before, fit_trend
 
 YIELD = "wasde.us_corn.yield"
 PROD = "wasde.us_corn.production"
+RUSSIA = "wasde.russia_wheat.production"  # F10 optional slot (PREREG-AMENDMENTS 2026-10-16); read only by russia.py
 REL = "crop_production.us_corn.rel_ci90_pct"
 GE = "crop_progress.us_corn.good_excellent"
 BS_SERIES = tuple(f"wasde.us_corn.{n}" for n in
@@ -33,6 +34,7 @@ ALLOW: dict[str, frozenset[str]] = {
     "PROD": frozenset({PROD}),
     "B1": frozenset({PROD, YIELD, REL}),
     "STU": frozenset(BS_SERIES),
+    "M1R": frozenset({RUSSIA}),  # F10: M1 on the Russia wheat production print
 }
 
 TAUS5 = (Fraction(1, 10), Fraction(1, 4), Fraction(1, 2), Fraction(3, 4), Fraction(9, 10))
