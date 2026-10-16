@@ -49,8 +49,11 @@ def main() -> None:
     elif cmd == "russia":
         from .russia import run
         sys.exit(run())
+    elif cmd == "live":
+        from .live import run
+        sys.exit(run())
     else:
-        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|preflight|evaluate|quickstats|russia-store|russia-forecasts|russia-preflight|russia|memo|memo-render|trace")
+        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|preflight|evaluate|quickstats|russia-store|russia-forecasts|russia-preflight|russia|live|memo|memo-render|trace")
 
 
 main()
