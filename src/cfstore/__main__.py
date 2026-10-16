@@ -28,8 +28,20 @@ def main() -> None:
     elif cmd == "quickstats":
         from .quickstats import run
         sys.exit(run())
+    elif cmd == "russia-store":
+        from .russia import cmd_store
+        print(cmd_store())
+    elif cmd == "russia-forecasts":
+        from .russia import cmd_forecasts
+        print(cmd_forecasts())
+    elif cmd == "russia-preflight":
+        from .russia import run_preflight
+        sys.exit(run_preflight())
+    elif cmd == "russia":
+        from .russia import run
+        sys.exit(run())
     else:
-        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|preflight|evaluate|quickstats")
+        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|preflight|evaluate|quickstats|russia-store|russia-forecasts|russia-preflight|russia")
 
 
 main()
