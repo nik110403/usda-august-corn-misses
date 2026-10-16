@@ -22,11 +22,14 @@ def main() -> None:
     elif cmd == "evaluate":
         from .evaluate import run
         sys.exit(run())
+    elif cmd == "preflight":
+        from .evaluate import run_preflight
+        sys.exit(run_preflight())
     elif cmd == "quickstats":
         from .quickstats import run
         sys.exit(run())
     else:
-        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|evaluate|quickstats")
+        sys.exit("usage: python -m cfstore store|overlap|skeleton|replication|forecasts|preflight|evaluate|quickstats")
 
 
 main()

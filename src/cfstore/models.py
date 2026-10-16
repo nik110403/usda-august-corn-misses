@@ -449,15 +449,16 @@ META_COLS = ["build_commit", "code_tree", "store_sha256"]
 
 
 def build_identity(root) -> dict:
-    """Provenance stamped on every out/forecasts.csv row and re-derived by `evaluate` (staleness gate). `code_tree` is the git
-    tree hash of src/ (+ '+dirty' if src/ differs from HEAD): it identifies the code that built the file without changing when
+    """Provenance stamped on every out/forecasts.csv row and re-derived by `evaluate` (staleness gate). `code_tree` hashes the git
+    object ids of src/, pyproject.toml and uv.lock (+ '+dirty' if any differs from HEAD): it identifies the code that built the file without changing when
     the outputs themselves are committed; `build_commit` is HEAD at build time (informational). `store_sha256` hashes the
     store and release tables the forecasts were built from."""
     import hashlib
     import subprocess
     git = lambda *a: subprocess.run(["git", *a], cwd=root, capture_output=True, text=True, check=True).stdout.strip()
-    tree = git("rev-parse", "HEAD:src")
-    if git("status", "--porcelain", "--", "src", "pyproject.toml"):
+    paths = ("src", "pyproject.toml", "uv.lock")
+    tree = hashlib.sha256("\n".join(f"{p} {git('rev-parse', 'HEAD:' + p)}" for p in paths).encode()).hexdigest()[:40]
+    if git("status", "--porcelain", "--", *paths):
         tree += "+dirty"
     h = hashlib.sha256()
     for name in ("store.csv", "wasde_releases.csv"):

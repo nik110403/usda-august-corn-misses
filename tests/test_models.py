@@ -298,3 +298,24 @@ def test_quickstats_duplicate_row_raises(tmp_path, monkeypatch):
     monkeypatch.setattr(quickstats, "TRUTH", tmp_path / "truth.csv")
     with pytest.raises(ValueError, match="duplicate"):
         quickstats.write_truth()
+
+
+def test_code_tree_covers_src_pyproject_and_uv_lock(tmp_path):
+    import subprocess
+    g = lambda *a: subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *a], cwd=tmp_path, check=True, capture_output=True)
+    (tmp_path / "src").mkdir()
+    (tmp_path / "data").mkdir()
+    for n in ("src/a.py", "pyproject.toml", "uv.lock", "data/store.csv", "data/wasde_releases.csv"):
+        (tmp_path / n).write_text("x\n")
+    g("init", "-q")
+    g("add", ".")
+    g("commit", "-q", "-m", "c")
+    base = models.build_identity(tmp_path)["code_tree"]
+    assert not base.endswith("+dirty")
+    for n in ("uv.lock", "pyproject.toml", "src/a.py"):
+        (tmp_path / n).write_text("changed\n")
+        assert models.build_identity(tmp_path)["code_tree"] == base + "+dirty", n
+        g("commit", "-q", "-am", n)
+        new = models.build_identity(tmp_path)["code_tree"]
+        assert new != base and not new.endswith("+dirty"), n
+        base = new

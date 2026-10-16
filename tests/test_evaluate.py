@@ -144,7 +144,7 @@ def table():
 
 def test_end_to_end_driver_on_synthetic_table(table, tmp_path):
     rows, truths = table
-    cuts = {"M2vM1_Jun", "B0vM1_Nov"}  # a plain set of test ids is still accepted
+    cuts = {"M2vM1_Jun", "M1cov50_May"}  # a plain set of test ids is still accepted
     out = ev.evaluate(rows, truths, cuts, leakage=[{"group": "leakage test 1", "passed": 3, "failed": 0, "overlap_origins": "24 of 215"}])
     prim = out["primary"]
     # the truth is 11x the USDA point (a miss) for the last 4 seasons at EVERY horizon in this fixture, so the 80% band covers 18 of 22 everywhere
@@ -248,10 +248,10 @@ def test_scope_cuts_file_default_empty_and_validated(tmp_path):
     assert not ev.read_cuts(tmp_path / "missing.csv").any
     p = tmp_path / "scope_cuts.csv"
     hdr = "item,kind,target,timestamp,commit\n"
-    p.write_text(hdr + "7,test,M3vM1_Jun,2026-01-01T00:00:00Z,abc\n")
-    assert ev.read_cuts(p).tests == {"M3vM1_Jun"}
+    p.write_text(hdr + "1,optional,F10,2026-01-01T00:00:00Z,abc\n2,test,M2vM1_Aug,2026-01-01T00:00:00Z,abc\n")
+    assert ev.read_cuts(p).tests == {"M2vM1_Aug"}
     for bad in ("1,test,nope,2026-01-01T00:00:00Z,abc", "1,test,leakage_test_1,2026-01-01T00:00:00Z,abc",
-                "1,test,M3vM1_Jun,yesterday,abc", "1,test,M3vM1_Jun,2026-01-01T00:00:00Z,",
+                "2,test,M2vM1_Jun,yesterday,abc", "2,test,M2vM1_Jun,2026-01-01T00:00:00Z,",
                 "2,model,M1,2026-01-01T00:00:00Z,abc", "2,model,B0,2026-01-01T00:00:00Z,abc",
                 "5,horizon,Aug,2026-01-01T00:00:00Z,abc", "5,horizon,Nov,2026-01-01T00:00:00Z,abc",
                 "7,model,M2,2026-01-01T00:00:00Z,abc", "3,truth,primary,2026-01-01T00:00:00Z,abc", "4,table,B1_80,2026-01-01T00:00:00Z,abc",
@@ -405,13 +405,62 @@ def test_uncuttable_targets_are_refused():
 
 def test_scope_cuts_csv_roundtrip_applies_cuts(tmp_path):
     p = tmp_path / "scope_cuts.csv"
-    p.write_text("item,kind,target,timestamp,commit\n" + "\n".join(['2,model,M2,2026-10-16T10:00:00Z,abc123', '5,horizon,Oct,2026-10-16T10:00:00Z,abc123', '3,truth,sensitivity,2026-10-16T10:00:00Z,abc123', '4,table,B1_90,2026-10-16T10:00:00Z,abc123', '1,optional,extension,2026-10-16T10:00:00Z,abc123', '7,test,M1cov50_Jun,2026-10-16T10:00:00Z,abc123']) + "\n")
+    p.write_text(_cuts_csv(["1,optional,extension", "2,model,M2", "3,truth,sensitivity", "4,table,B1_90"] + [f"5,horizon,{h}" for h in ev.CUT_HORIZONS]
+                           + ["5,test,M1cov50_Jun"]))
     c = ev.read_cuts(p)
-    assert (c.models, c.horizons, c.truths, c.tables, c.optional) == ({"M2"}, {"Oct"}, {"sensitivity"}, {"B1_90"}, {"extension"})
+    assert (c.models, c.horizons, c.truths, c.tables, c.optional) == ({"M2"}, set(ev.CUT_HORIZONS), {"sensitivity"}, {"B1_90"}, {"extension"})
     assert "M1cov50_Jun" in c.tests and "M2vM1_Aug" in c.tests and "M3vM1_Oct" in c.tests and "M1cov80_Oct" in c.tests
     rows, truths = synth()
     out = ev.evaluate(rows, _with_sens(truths), c)
     assert not any(r["model"] in ("M2", "B1", "B1y") for r in out["coverage.csv"]) and not any(r["horizon"] == "Oct" for r in out["scores.csv"])
+
+
+def _cuts_csv(rows):
+    return "item,kind,target,timestamp,commit\n" + "".join(f"{r},2026-10-16T10:00:00Z,abc123\n" for r in rows)
+
+
+def _read(tmp_path, rows):
+    p = tmp_path / "scope_cuts.csv"
+    p.write_text(_cuts_csv(rows))
+    return ev.read_cuts(p)
+
+
+H5 = [f"5,horizon,{h}" for h in ev.CUT_HORIZONS]
+OPT = "1,optional,F10"
+
+
+def test_test_cuts_need_a_strategy_item_and_the_matching_number(tmp_path):
+    # fix2 #1: ids with no STRATEGY 10 item, and rows whose item number does not match the id's item, are refused
+    for tid in ("B0vM1_Aug", "B0vM1_Nov", "M1cov50_Aug", "M1cov50_Sep", "M1cov50_Nov", "PRODcov80_Aug", "PRODcov80_Nov", "M1cov80_Aug", "M1cov80_Sep"):
+        with pytest.raises(SystemExit):
+            _read(tmp_path, [OPT, f"2,test,{tid}"])
+        with pytest.raises(SystemExit):
+            ev.make_cuts(tests={tid})
+    with pytest.raises(SystemExit, match="item 5"):
+        _read(tmp_path, [OPT, "2,test,M1cov50_Jun"])  # a May-Oct id is item 5, not 2
+    with pytest.raises(SystemExit, match="item 2"):
+        _read(tmp_path, [OPT, "7,test,M2vM1_Aug"])  # M2 id is item 2 (or 5 if at a non-Aug/Sep/Nov horizon), not 7
+    with pytest.raises(SystemExit, match="item 7"):
+        _read(tmp_path, [OPT, "2,test,M3vM1_Sep"])
+    assert _read(tmp_path, [OPT, "2,test,M2vM1_Aug"]).tests == {"M2vM1_Aug"}
+    assert _read(tmp_path, [OPT] + H5[:0] + ["2,test,M2vM1_Jun"]).tests == {"M2vM1_Jun"}  # item 2 or 5 for an M2 id at Jun
+    assert _read(tmp_path, [OPT, "2,model,M2", "3,truth,sensitivity", "4,table,B1_90"] + H5 + ["6,optional,writeup", "7,test,M3vM1_Sep"]).tests >= {"M3vM1_Sep"}
+    assert ev.TEST_ITEMS["M1cov50_Jun"] == {"5"} and ev.TEST_ITEMS[ev.PRIMARY_DM_ID] == {"7"} and "B0vM1_Aug" not in ev.TEST_ITEMS
+
+
+def test_cuts_refused_out_of_order_and_item_5_all_or_nothing(tmp_path):
+    for rows in (["2,model,M2"], [OPT, "3,truth,sensitivity"], [OPT, "2,model,M2", "4,table,B1_90"], [OPT, "7,model,M3"],
+                 [OPT, "2,model,M2", "3,truth,sensitivity", "4,table,B1_90"] + H5 + ["7,model,M3"],  # item 6 not cut
+                 [OPT, "2,model,M2", "3,truth,sensitivity", "4,table,B1_90", "5,horizon,Oct"],  # 5 partial
+                 [OPT, "2,model,M2", "3,truth,sensitivity", "4,table,B1_90"] + H5[:3] + ["5,test,M1cov50_Jun"],
+                 ["2,test,M2vM1_Aug"]):  # item 1 not cut
+        with pytest.raises(SystemExit):
+            _read(tmp_path, rows)
+    with pytest.raises(SystemExit, match="all-or-nothing"):
+        _read(tmp_path, [OPT, "2,model,M2", "3,truth,sensitivity", "4,table,B1_90"] + H5[:3])
+    c = _read(tmp_path, [OPT, "2,model,M2", "3,truth,sensitivity", "4,table,B1_90"] + H5 + ["6,optional,writeup", "7,model,M3"])  # legal full order
+    assert c.models == {"M2", "M3"} and c.horizons == set(ev.CUT_HORIZONS)
+    assert _read(tmp_path, [OPT]).optional == {"F10"} and _read(tmp_path, [OPT, "2,model,M2"]).models == {"M2"}
 
 
 def test_b0_scored_only_from_nine_own_errors_at_every_level():
@@ -444,6 +493,53 @@ def test_preflight_requires_b0_17_and_b1_oct_19():
     with pytest.raises(ev.PreregCountError, match="B1 Oct"):
         ev.evaluate([dict(r, scored="0") if (r["model"] == "B1" and r["season"] == "2010" and r["horizon"] == "Oct") else r for r in rows],
                     truths, set())
+
+
+def test_preflight_never_calls_covered(monkeypatch):
+    # fix2 #3: availability only; no band / truth comparison before the gate passes
+    def boom(*a, **k):
+        raise AssertionError("covered() called before the preflight gate")
+    monkeypatch.setattr(ev.Data, "covered", boom)
+    monkeypatch.setattr(ev.Data, "count", boom)
+    rows, truths = synth()
+    d = ev.Data(rows, truths)
+    ev.preflight(d, truths)
+    assert any("M1" in ln for ln in ev.avail_lines(d))
+    t2 = ev.Truths({s: v for s, v in truths.yield_.items() if s != 2010}, truths.prod)
+    with pytest.raises(ev.PreregCountError):  # the failing gate raises its own error, not a scoring AssertionError
+        ev.evaluate(rows, t2, set())
+
+
+def test_v2_forecast_set_goes_through_the_same_preflight():
+    rows, truths = synth()
+    ev.evaluate(rows, truths, set(), rows)
+    bad = [r for r in rows if not (r["model"] == "M1" and r["season"] == "2010" and r["horizon"] == "Aug")]
+    with pytest.raises(ev.PreregCountError, match="v2 re-post forecasts"):
+        ev.evaluate(rows, truths, set(), bad)
+
+
+def test_missing_quickstats_truth_fails_unless_sensitivity_cut_is_logged(tmp_path):
+    (tmp_path / "data").mkdir()
+    with pytest.raises(SystemExit, match="quickstats_truth.csv is missing"):
+        ev.load_truths(tmp_path, [])
+    with pytest.raises(SystemExit):
+        ev.load_truths(tmp_path, [], ev.make_cuts(models={"M2"}))
+    t = ev.load_truths(tmp_path, [], ev.make_cuts(truths={"sensitivity"}))
+    assert t.sens_yield is None
+
+
+def test_forecast_hash_recorded_in_outputs_and_checked(tmp_path):
+    f = tmp_path / "out"
+    f.mkdir()
+    (f / "forecasts.csv").write_text("a,b\n1,2\n")
+    rows, h = ev.read_hashed(f / "forecasts.csv")
+    assert rows == [{"a": "1", "b": "2"}] and len(h) == 64
+    ev.check_unchanged(tmp_path, {"forecasts_sha256": h})
+    ev.write_outputs({"x.csv": [{"k": "v"}], "p.txt": ["line"]}, tmp_path / "eval", "abc", "2026-01-01T00:00:00Z", {"forecasts_sha256": h})
+    assert _csv_rows(tmp_path / "eval" / "x.csv")[0]["forecasts_sha256"] == h and f"forecasts_sha256: {h}" in (tmp_path / "eval" / "p.txt").read_text()
+    (f / "forecasts.csv").write_text("a,b\n1,3\n")
+    with pytest.raises(SystemExit, match="changed while"):
+        ev.check_unchanged(tmp_path, {"forecasts_sha256": h})
 
 
 def test_leakage_failure_aborts_with_no_outputs(tmp_path):

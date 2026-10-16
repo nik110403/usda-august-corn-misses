@@ -12,6 +12,7 @@ quantile score* (not CRPS).
 """
 import csv
 import hashlib
+import io
 import re
 import subprocess
 import sys
@@ -56,10 +57,28 @@ EXPECTED_B0VM1 = {"Aug": 17, "Nov": 17}  # B0 scored from 2009 (>= 9 own OOS err
 CUT_COLUMNS = ["item", "kind", "target", "timestamp", "commit"]
 M3_TESTS = frozenset([t[0] for t in FAMILY if t[2] == "M3"] + [PRIMARY_DM_ID])
 M2_TESTS = frozenset(t[0] for t in FAMILY if t[2] == "M2")
-CUTTABLE = {"model": ("M2", "M3"), "truth": ("sensitivity",), "table": ("B1_90",), "horizon": ("May", "Jun", "Jul", "Oct"),
-            "optional": ("extension", "forward_test", "writeup")}
+CUT_HORIZONS = ("May", "Jun", "Jul", "Oct")  # STRATEGY 10 item 5: all four together or none
+CUTTABLE = {"model": ("M2", "M3"), "truth": ("sensitivity",), "table": ("B1_90",), "horizon": CUT_HORIZONS,
+            "optional": ("extension", "forward_test", "F10", "writeup")}
 CUT_ITEM = {("model", "M2"): "2", ("model", "M3"): "7", ("truth", "sensitivity"): "3", ("table", "B1_90"): "4",
-            ("optional", "extension"): "1", ("optional", "forward_test"): "1", ("optional", "writeup"): "6"}  # horizon -> "5"
+            ("optional", "extension"): "1", ("optional", "forward_test"): "1", ("optional", "F10"): "1",  # F10 = "no optional item chosen"
+            ("optional", "writeup"): "6"}  # horizon -> "5"
+
+
+def _test_items() -> dict[str, frozenset]:
+    """Family test id -> the STRATEGY 10 items under which it may be cut: M2 ids item 2, M3 ids (and the primary comparison) item 7,
+    any id at May / Jun / Jul / Oct item 5 (M1 and PROD coverage, M2, M3). Ids with no item (B0vM1_*, anything at Aug / Sep / Nov
+    that is not M2 / M3) are not cuttable as tests."""
+    out: dict[str, set] = {PRIMARY_DM_ID: {"7"}}
+    for tid, _kind, model, h, _lev in FAMILY:
+        it = out.setdefault(tid, set())
+        it |= {"M2": {"2"}, "M3": {"7"}}.get(model, set())
+        if h in CUT_HORIZONS:
+            it.add("5")
+    return {k: frozenset(v) for k, v in out.items() if v}
+
+
+TEST_ITEMS = _test_items()
 
 
 @dataclass(frozen=True)
@@ -92,6 +111,10 @@ def make_cuts(tests=(), models=(), truths=(), tables=(), horizons=(), optional=(
     if unknown:
         lk = sorted(u for u in unknown if "leak" in u.lower())
         raise SystemExit(f"REFUSING scope cut {lk}: leakage tests are never cut" if lk else f"unknown test ids in scope cuts: {sorted(unknown)}")
+    no_item = sorted(tests - set(TEST_ITEMS))
+    if no_item:
+        raise SystemExit(f"REFUSING scope cut {no_item}: no STRATEGY 10 item covers these tests (only M2 / M3 ids and the "
+                         "May / Jun / Jul / Oct ids are cuttable)")
     for kind, vals in (("model", models), ("truth", truths), ("table", tables), ("horizon", horizons), ("optional", optional)):
         bad = set(vals) - set(CUTTABLE[kind])
         if bad:
@@ -550,16 +573,46 @@ def read_cuts(path: Path) -> Cuts:
             raise SystemExit(f"{path}: unknown cut kind {kind!r}")
         if not re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", r["timestamp"]):
             raise SystemExit(f"{path}: timestamp must be UTC ISO (YYYY-MM-DDTHH:MM:SSZ): {r['timestamp']!r}")
-        want = "5" if kind == "horizon" else CUT_ITEM.get((kind, target))
-        if kind != "test" and want is not None and r["item"] != want:
-            raise SystemExit(f"{path}: cut {kind} {target} is STRATEGY 10 item {want}, not {r['item']!r}")
+        if kind == "test":
+            allowed = TEST_ITEMS.get(target)
+            if allowed is not None and r["item"] not in allowed:
+                raise SystemExit(f"{path}: test {target} is STRATEGY 10 item {' or '.join(sorted(allowed))}, not {r['item']!r}")
+        else:
+            want = "5" if kind == "horizon" else CUT_ITEM.get((kind, target))
+            if want is not None and r["item"] != want:
+                raise SystemExit(f"{path}: cut {kind} {target} is STRATEGY 10 item {want}, not {r['item']!r}")
         acc[kind].add(target)
-    return make_cuts(tests=acc["test"], models=acc["model"], truths=acc["truth"], tables=acc["table"], horizons=acc["horizon"],
+    cuts = make_cuts(tests=acc["test"], models=acc["model"], truths=acc["truth"], tables=acc["table"], horizons=acc["horizon"],
                      optional=acc["optional"], rows=tuple(tuple(r[c] for c in CUT_COLUMNS) for r in rows))
+    check_cut_order(path, rows, cuts)
+    return cuts
 
 
-def load_truths(root: Path, store: list[dict]) -> Truths:
+def check_cut_order(path, rows: list[dict], cuts: Cuts) -> None:
+    """STRATEGY 10: cut from the top. A row of item k is refused unless items 1..k-1 are all cut (item 1 counts as cut once any
+    item-1 optional target is logged, e.g. `1,optional,F10` when no optional item was chosen). Item 5 is all-or-nothing."""
+    done = {1: bool(cuts.optional & {"extension", "forward_test", "F10"}), 2: "M2" in cuts.models, 3: "sensitivity" in cuts.truths,
+            4: "B1_90" in cuts.tables, 5: cuts.horizons == frozenset(CUT_HORIZONS), 6: "writeup" in cuts.optional, 7: "M3" in cuts.models}
+    if cuts.horizons and not done[5] or any(r["item"] == "5" for r in rows) and not done[5]:
+        raise SystemExit(f"{path}: item 5 is all-or-nothing: horizons {list(CUT_HORIZONS)} must all be cut together, got {sorted(cuts.horizons)}")
+    for r in rows:
+        k = int(r["item"]) if r["item"].isdigit() else 0
+        if not 1 <= k <= 7:
+            raise SystemExit(f"{path}: item must be a STRATEGY 10 number 1-7: {r['item']!r}")
+        missing = [j for j in range(1, k) if not done[j]]
+        if missing:
+            raise SystemExit(f"{path}: cut of item {k} ({r['kind']} {r['target']}) refused: STRATEGY 10 cuts from the top, "
+                             f"items {missing} are not cut")
+
+
+def load_truths(root: Path, store: list[dict], cuts: Cuts | None = None) -> Truths:
+    """Primary truths from the store; sensitivity truths from data/quickstats_truth.csv. A missing file fails the run unless the
+    sensitivity truth is cut (a logged `3,truth,sensitivity` row): nothing is dropped silently."""
     from .skeleton import truth_rows
+    qs = root / "data" / "quickstats_truth.csv"
+    if not qs.exists() and "sensitivity" not in (cuts or Cuts()).truths:
+        raise SystemExit(f"REFUSING TO RUN: {qs} is missing and no `3,truth,sensitivity` cut is logged in scope_cuts.csv; "
+                         "run `make quickstats` or log the cut")
     y, p = {}, {}
     for s in range(1995, 2026):
         t = truth_rows(store, s)
@@ -570,14 +623,11 @@ def load_truths(root: Path, store: list[dict]) -> Truths:
               and r["release_date"] == t["release_date"] and r["revision_flag"] != "v2_repost"]
         assert len(pr) == 1, (s, len(pr))
         p[s] = Fraction(pr[0]["value"])
-    qs = root / "data" / "quickstats_truth.csv"
     sy = sp = None
     if qs.exists():
         rows = read_csv(qs)
         sy = {int(r["crop_year"]): Fraction(r["yield_bu_ac"]) for r in rows}
         sp = {int(r["crop_year"]): Fraction(r["production_bu"]) / 10**6 for r in rows}  # BU -> Mbu
-    else:
-        print("sensitivity truth unavailable: data/quickstats_truth.csv missing; sensitivity-truth rows omitted", file=sys.stderr)
     return Truths(y, p, sy, sp)
 
 
@@ -609,10 +659,38 @@ class PreregCountError(Exception):
     """A PREREG season count or a family-test computability condition does not hold; the run fails, no output is written."""
 
 
-def preflight(d: Data, truths: Truths) -> None:
-    """PREREG season counts asserted BEFORE any score (PREREG 1, 3, 4, 5; PREREG-AMENDMENTS 2026-10-16 item 2). Counts use rows and
-    truth availability only. A season that has scored rows but no truth / no USDA base (it would be silently dropped from a
-    score) is a failure, as is any family test that is not computable and not cut."""
+def n_scored_truth(d: Data, model: str, h: str, lev: Fraction) -> tuple[int, int]:
+    """(seasons with a scored band row, of those with a truth value). Availability only: no band, point or truth comparison."""
+    sea = d.seasons(model, h, lev)
+    return len(sea), sum(d.t.get(d.lv[(model, h, s, lev)]["unit"], s) is not None for s in sea)
+
+
+def avail_lines(d: Data, label: str = "primary") -> list[str]:
+    """The counts `preflight` asserts, as text: per model x horizon, scored seasons and seasons with a truth value."""
+    out = [f"availability counts ({label}; scored forecast rows with a truth value; no score computed):"]
+    for h in HORIZONS:
+        parts = []
+        for model in ("M1", "PROD", "M2", "M3", "B0"):
+            tau, use = len(d.scored_taus(model, h)), len(d.loss_inputs(model, h))
+            if tau or model != "M3":
+                parts.append(f"{model} quantiles {tau}/{use}")
+        for model in ("M1", "PROD", "M2"):
+            for lev in (HALF, EIGHTY):
+                n, nt = n_scored_truth(d, model, h, lev)
+                if n:
+                    parts.append(f"{model} {float(lev):.0%} band {n}/{nt}")
+        out.append(f"  {h}: PREREG {EXPECTED_N[h]}; " + "; ".join(parts))
+    for model in ("B1", "B1y"):
+        out.append(f"  {model} 90% band (Aug/Sep/Oct/Nov): " + " ".join(f"{n_scored_truth(d, model, h, NINETY)[0]}/{n_scored_truth(d, model, h, NINETY)[1]}" for h in EXPECTED_B1)
+                   + f"; amendments {' '.join(str(v) for v in EXPECTED_B1.values())}")
+    return out
+
+
+def preflight(d: Data, truths: Truths, label: str = "primary") -> None:
+    """PREREG season counts asserted BEFORE any score (PREREG 1, 3, 4, 5; PREREG-AMENDMENTS 2026-10-16 item 2). Availability only:
+    a season counts if it has a scored forecast row and a truth value; nothing is compared with a band or a point (no `covered()`).
+    A season that has scored rows but no truth / no USDA base (it would be silently dropped from a score) is a failure, as is
+    any family test that is not computable and not cut."""
     cuts, bad = d.cuts, []
     for s in range(2004, 2026):
         for unit, name in (("bu/ac", "yield"), ("Mbu", "production")):
@@ -641,18 +719,18 @@ def preflight(d: Data, truths: Truths) -> None:
             for lev in (HALF, EIGHTY):
                 if cuts.cov_cut(model, h, lev):
                     continue
-                sea = d.seasons(model, h, lev)
-                if len(sea) != want or d.count(model, h, lev)[1] != len(sea):
-                    bad.append(f"{model} {h} {lev}: {len(sea)} scored / {d.count(model, h, lev)[1]} with truth, PREREG says {want}")
+                n, nt = n_scored_truth(d, model, h, lev)
+                if n != want or nt != n:
+                    bad.append(f"{model} {h} {lev}: {n} scored / {nt} with truth, PREREG says {want}")
     if "B1_90" not in cuts.tables:
         for model in ("B1", "B1y"):
             for h, want in EXPECTED_B1.items():
                 if h in cuts.horizons:
                     continue
-                sea = d.seasons(model, h, NINETY)
-                if len(sea) != want or d.count(model, h, NINETY)[1] != len(sea):
-                    bad.append(f"{model} {h}: {len(sea)} scored seasons, amendments say {want}")
-    n = d.count("M1", "Aug", EIGHTY)[1]
+                n, nt = n_scored_truth(d, model, h, NINETY)
+                if n != want or nt != n:
+                    bad.append(f"{model} {h}: {n} scored seasons / {nt} with truth, amendments say {want}")
+    n = n_scored_truth(d, "M1", "Aug", EIGHTY)[1]
     if n != 22:
         bad.append(f"primary calibration object M1 80% Aug: n = {n}, PREREG says 22")
     for tid, kind, model, h, lev in FAMILY:
@@ -668,7 +746,7 @@ def preflight(d: Data, truths: Truths) -> None:
     if PRIMARY_DM_ID not in cuts.tests and len(set(d.loss_inputs("M1", "Aug")) & set(d.loss_inputs("M3", "Aug"))) != 22:
         bad.append(f"{PRIMARY_DM_ID} is not computable on 22 seasons")
     if bad:
-        raise PreregCountError("PREREG count check failed, nothing written:\n  " + "\n  ".join(bad))
+        raise PreregCountError(f"PREREG count check failed ({label}), nothing written:\n  " + "\n  ".join(bad))
 
 
 def evaluate(fc_rows, truths, cuts=frozenset(), fc_v2_rows=None, leakage=None) -> dict:
@@ -680,6 +758,8 @@ def evaluate(fc_rows, truths, cuts=frozenset(), fc_v2_rows=None, leakage=None) -
         fc_v2_rows, _ = apply_cuts(fc_v2_rows, truths, cuts)
     d = Data(fc_rows, truths, cuts=cuts)
     preflight(d, truths)
+    if fc_v2_rows:
+        preflight(Data(fc_v2_rows, truths, cuts=cuts), truths, "v2 re-post forecasts")  # same expected counts as the primary set
     lines, prim = primary_tables(d)
     skill, mz = skill_and_mz(d)
     ex = corrected_exclusions(fc_rows)
@@ -708,7 +788,9 @@ def evaluate(fc_rows, truths, cuts=frozenset(), fc_v2_rows=None, leakage=None) -
     return out
 
 
-def write_outputs(out: dict, outdir: Path, commit: str, stamp: str) -> list[Path]:
+def write_outputs(out: dict, outdir: Path, commit: str, stamp: str, fc_hashes: dict | None = None) -> list[Path]:
+    """`fc_hashes` = {column name: sha256 of the forecast file the numbers were computed from}, recorded in every output."""
+    fc_hashes = fc_hashes or {}
     outdir.mkdir(parents=True, exist_ok=True)
     written = []
     for name, rows in out.items():
@@ -716,14 +798,15 @@ def write_outputs(out: dict, outdir: Path, commit: str, stamp: str) -> list[Path
             continue
         path = outdir / name
         if name.endswith(".txt"):
-            path.write_text("\n".join([f"code commit: {commit}", f"generated: {stamp}", ""] + rows) + "\n")
+            hdr = [f"code commit: {commit}", f"generated: {stamp}"] + [f"{k}: {v}" for k, v in fc_hashes.items()]
+            path.write_text("\n".join(hdr + [""] + rows) + "\n")
         else:
-            cols = list(dict.fromkeys(k for r in rows for k in r)) + ["code_commit", "generated_utc"]
+            cols = list(dict.fromkeys(k for r in rows for k in r)) + ["code_commit", "generated_utc"] + list(fc_hashes)
             with path.open("w", newline="") as f:
                 w = csv.DictWriter(f, cols, lineterminator="\n", restval="")
                 w.writeheader()
                 for r in rows:
-                    w.writerow({**r, "code_commit": commit, "generated_utc": stamp})
+                    w.writerow({**r, "code_commit": commit, "generated_utc": stamp, **fc_hashes})
         written.append(path)
     return written
 
@@ -740,26 +823,76 @@ def check_fresh(fc: list[dict], ident: dict, name: str = "out/forecasts.csv") ->
         raise SystemExit("REFUSING TO RUN: src/ has uncommitted changes; commit, then `make forecasts`")
 
 
+def read_hashed(path: Path) -> tuple[list[dict], str]:
+    """Rows and sha256 of the SAME bytes (the hash is of what was parsed, not of a later read of the file)."""
+    raw = path.read_bytes()
+    return list(csv.DictReader(io.StringIO(raw.decode(), newline=""))), hashlib.sha256(raw).hexdigest()
+
+
+def load_forecasts(root: Path) -> tuple[list[dict], list[dict] | None, dict]:
+    """out/forecasts.csv (+ forecasts_v2.csv), checked fresh against the current build identity; returns the rows and the content
+    hashes recorded in every eval output."""
+    from .models import build_identity
+    ident = build_identity(root)
+    fc, h1 = read_hashed(root / "out" / "forecasts.csv")
+    check_fresh(fc, ident)
+    hashes = {"forecasts_sha256": h1}
+    v2p = root / "out" / "forecasts_v2.csv"
+    v2 = None
+    if v2p.exists():
+        v2, h2 = read_hashed(v2p)
+        check_fresh(v2, ident, "out/forecasts_v2.csv")
+        hashes["forecasts_v2_sha256"] = h2
+    return fc, v2, hashes
+
+
+def check_unchanged(root: Path, hashes: dict) -> None:
+    """The forecast files must still hash to what was read (no regeneration mid-run)."""
+    for key, name in (("forecasts_sha256", "forecasts.csv"), ("forecasts_v2_sha256", "forecasts_v2.csv")):
+        if key in hashes and hashlib.sha256((root / "out" / name).read_bytes()).hexdigest() != hashes[key]:
+            raise SystemExit(f"REFUSING TO WRITE: out/{name} changed while the evaluation ran")
+
+
+def run_preflight(root: Path | None = None) -> int:
+    """`python -m cfstore preflight`: ONLY the availability check (scored forecast row + truth value per season) on real data.
+    Computes no score and no coverage; prints the counts."""
+    from .baselines import load
+    from .fetch import ROOT
+    root = root or ROOT
+    cuts = read_cuts(root / "scope_cuts.csv")
+    store, _ = load()
+    fc, v2, _ = load_forecasts(root)
+    truths = load_truths(root, store, cuts)
+    status = 0
+    for label, rows in (("primary", fc), ("v2 re-post forecasts", v2)):
+        if rows is None:
+            continue
+        rows, t = apply_cuts(rows, truths, cuts)
+        d = Data(rows, t, cuts=cuts)
+        print("\n".join(avail_lines(d, label)))
+        try:
+            preflight(d, t, label)
+            print(f"PREFLIGHT OK ({label})")
+        except PreregCountError as e:
+            print(e)
+            status = 1
+    return status
+
+
 def run(root: Path | None = None) -> int:
     from .baselines import load
     from .fetch import ROOT
-    from .models import build_identity
     root = root or ROOT
     verify_prereg(root)
     cuts = read_cuts(root / "scope_cuts.csv")  # fails before anything is computed on a refused cut
     leakage = run_leakage_tests(root)  # exits on any failure: no output is written
-    ident = build_identity(root)
     store, _ = load()
-    fc = read_csv(root / "out" / "forecasts.csv")
-    check_fresh(fc, ident)
-    v2p = root / "out" / "forecasts_v2.csv"
-    v2 = read_csv(v2p) if v2p.exists() else None
-    if v2:
-        check_fresh(v2, ident, "out/forecasts_v2.csv")
-    truths = load_truths(root, store)
+    fc, v2, hashes = load_forecasts(root)
+    truths = load_truths(root, store, cuts)
     out = evaluate(fc, truths, cuts, v2, leakage)
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    files = write_outputs(out, root / "out" / "eval", code_commit(root), stamp)
+    check_unchanged(root, hashes)
+    files = write_outputs(out, root / "out" / "eval", code_commit(root), stamp, hashes)
     print("\n".join(out["primary.txt"]))
     print(f"\nwrote {len(files)} files to out/eval/")
     return 0
