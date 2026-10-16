@@ -55,7 +55,7 @@ russia-forecasts:
 # availability counts only (origins, scored seasons per horizon, seasons with truth); no coverage, no score. Safe to run.
 russia-preflight:
 	$(PY) russia-preflight
-# ONE run (PREREG-AMENDMENTS F10 item 7). DO NOT RUN until the orchestrator says so: refuses if PREREG.sha256 fails, a leakage test fails
+# ONE run (PREREG-AMENDMENTS F10 item 7); its outputs ship in out/russia/, do not re-run. Refuses if PREREG.sha256 fails, a leakage test fails
 # or out/russia/forecasts.csv is stale; prints the scored-season counts BEFORE any coverage; then writes out/russia/.
 russia: russia-forecasts
 	$(PY) russia

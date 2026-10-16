@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this package, please cite it as below."
+type: software
+title: "How far can USDA's August corn yield miss the January final? Testing an 80% band, 2004–2025"
+abstract: "An 80% band built only from USDA's own past August corn yield misses against the January final, scored on 22 seasons (2004–2025) using only what was public on each release morning. It covered 21 of 22: the pre-registered verdict is too wide, with about 4 points of the excess expected from the estimator itself."
+authors:
+  - family-names: Khosravipour
+    given-names: Nik
+repository-code: "https://github.com/nik110403/usda-august-corn-misses"
+url: "https://nikkhosravipour.com"
+license: MIT
