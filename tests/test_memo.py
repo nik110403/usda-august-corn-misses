@@ -28,6 +28,24 @@ def test_coverage_table_matches_eval():
     assert all(r["label"] == "descriptive" for r in rows if r["model"] == "B1")
 
 
+def test_compact_coverage_matches_table():
+    full = {(r["model"], r["horizon"], r["level"]): r for r in rd(OUT / "memo" / "coverage_table.csv")}
+    rows = rd(OUT / "memo" / "coverage_memo.csv")
+    assert [(r["Model"], r["Horizon"], r["Level"]) for r in rows] == [(m, h, "80%") for m, h in zip(
+        ["M1", "M1", "M1", "M1 (primary)", "M1", "M1", "M1"], ["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"])] + [
+        ("PROD", "Aug", "80%"), ("B1", "Aug", "90%")]
+    for r in rows:
+        f = full[(r["Model"].split()[0], r["Horizon"], r["Level"])]
+        assert (r["n"], r["x"]) == (f["n"], f["x"])
+        assert r["Coverage"] == f"{100 * float(f['coverage']):.1f}%"
+        assert r["CP90"] == f"[{100 * float(f['cp90_lo']):.1f}%, {100 * float(f['cp90_hi']):.1f}%]"
+        assert r["Wording"] == {"not distinguishable from 80% at this sample size, and not shown equivalent": "not distinguishable",
+                                "": "descriptive"}.get(f["wording"], f["wording"])
+    md = (OUT / "memo" / "coverage_memo.md").read_text().splitlines()
+    assert md[0].startswith("| Model | Horizon | Level | n | x | Coverage | CP90 | Wording |") and len(md) == 2 + len(rows)
+    assert all(ln.startswith("|") for ln in md)
+
+
 def test_headline_matches_primary_txt():
     prim = (OUT / "eval" / "primary.txt").read_text()
     h = (OUT / "memo" / "headline.md").read_text()
