@@ -1,5 +1,5 @@
 PY = uv run python -I -m cfstore
-.PHONY: all store test-leakage test-validation test-baselines test-models test-russia replication skeleton forecasts quickstats preflight evaluate russia-store russia-forecasts russia-preflight russia memo-assets memo live
+.PHONY: all store test-leakage test-validation test-baselines test-models test-russia replication skeleton forecasts quickstats preflight evaluate russia-store russia-forecasts russia-preflight russia memo-assets memo live explore
 # clean rebuild (F8): store -> forecasts -> quickstats -> replication -> memo; never re-scores (evaluate and russia are one-shot, outputs ship in out/)
 all: store forecasts quickstats replication memo
 
@@ -63,3 +63,7 @@ russia: russia-forecasts
 # F11: forecast-only 2026 M1 yield/production bands into out/live/ (no truth, no score; settles against the Jan 2027 Annual Summary). Safe to run.
 live:
 	$(PY) live
+
+# post-hoc exploratory, not pre-registered, not scored; safe to run
+explore:
+	$(PY) explore
