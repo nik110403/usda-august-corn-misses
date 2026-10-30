@@ -50,6 +50,7 @@ Every exhibit in the memo and write-up, the command that makes it and the file i
 | Stress years | `make memo` | `out/memo/stress_years.md` |
 | Primary verdict, test family with Holm-adjusted p | `make evaluate` (one run, already done) | `out/eval/primary.txt`, `out/eval/family.csv` |
 | Russian wheat port (exploratory) | `make russia` (one run, already done) | `out/russia/primary.txt`, `out/russia/coverage.csv` |
+| Post-hoc yield and area split, 2020 and 2025 revisions (exploratory, not scored) | `make explore` | `out/explore/summary.md`, `out/explore/seasons.csv`, `out/explore/reliability.csv` |
 | Memo and write-up | `make memo` | `out/memo.pdf`, `out/memo.md`, `out/writeup.md` |
 
 ## Live 2026 band
