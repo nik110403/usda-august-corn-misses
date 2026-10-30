@@ -6,7 +6,7 @@
 
 ## Question
 
-How far can USDA's January final corn yield land from its August print? We put an 80% band around the August print, built from USDA's own past August-to-January misses, and scored it on 22 seasons, 2004–2025. It covered 21 of 22; the pre-registered verdict is "too wide".
+How far can USDA's January final corn yield land from its August print? We put an 80% band around the August print, built from USDA's own past August-to-January misses, and scored it on 22 seasons, 2004–2025. It covered 21 of 22; the pre-registered verdict is "too wide", with about 4 points of the excess expected from the estimator itself.
 
 ## August 2025 answer
 

@@ -253,7 +253,7 @@ def figure(out: Path, m1: dict, truths, cov: list[dict], shas: dict) -> None:
     ax.set_xticks([s for s in seasons if s % 2 == 0])
     ax.tick_params(axis="x", labelrotation=45)
     from matplotlib.lines import Line2D
-    ax.legend(handles=[Line2D([], [], color=blue, lw=5, alpha=0.45, label="M1 80% band"),
+    ax.legend(handles=[Line2D([], [], color=blue, lw=5, alpha=0.45, label="80% band"),
                        Line2D([], [], marker="o", color="black", ls="", ms=4.5, label="Final yield, inside band"),
                        Line2D([], [], marker="D", color=verm, mec="black", ls="", ms=7, label="Final yield, outside band")],
               loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=3, fontsize=8, frameon=False, handlelength=1.5, columnspacing=1.2)
