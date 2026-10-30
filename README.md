@@ -15,6 +15,8 @@ Each August, USDA prints its first survey-based US corn yield, and grains desks 
 
 The memo (`out/memo.pdf`) and the longer write-up (`out/writeup.md`) give the August 2025 answer, the stocks-to-use decision line, where the band breaks, and an exploratory port to Russian wheat. No traded edge is claimed.
 
+The band is close to Isengildina-Massa, Irwin and Good’s (2009) histogram procedure, which built out-of-sample intervals from past WASDE price forecast errors; here I apply the idea to August corn yield. USDA also publishes a 90% production reliability range in its August-to-November Crop Production reports, scored here as B1. Irwin, Good and Sanders (2014) document USDA’s yield errors over time, while Isengildina-Massa, Karali and Irwin (2020) compare USDA with the average private forecast. My purpose with this case study was less about breaking new ground and more about gaining experience with commodities data.
+
 ## What makes the score honest
 
 - **As-of store.** Every value carries the timestamp of the release that printed it, rebuilt from the raw USDA ESMIS archive (WASDE, Crop Production, Crop Progress). A guard refuses any value released after the forecast origin, and leakage tests run before every scored run.
